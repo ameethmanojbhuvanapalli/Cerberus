@@ -1,12 +1,11 @@
 package com.example.cerberus.ui
 
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Process
 import android.provider.Settings
+import android.text.TextUtils
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -18,11 +17,11 @@ class PermissionHelperActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_permission_helper)
 
-        val usageAccessButton: Button = findViewById(R.id.button_usage_access)
+        val accessibilityPermissionButton: Button = findViewById(R.id.button_accessibility_permission)
         val overlayPermissionButton: Button = findViewById(R.id.button_overlay_permission)
 
-        usageAccessButton.setOnClickListener {
-            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        accessibilityPermissionButton.setOnClickListener {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             startActivity(intent)
         }
 
@@ -39,13 +38,20 @@ class PermissionHelperActivity : ComponentActivity() {
         }
     }
 
-    fun hasUsageStatsPermission(context: Context): Boolean {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            context.packageName
-        )
-        return mode == AppOpsManager.MODE_ALLOWED
+    fun hasAccessibilityPermission(context: Context): Boolean {
+        val expectedServiceId = "${context.packageName}/.service.AppLockService"
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+        colonSplitter.setString(enabledServices)
+        while (colonSplitter.hasNext()) {
+            val service = colonSplitter.next()
+            if (service.equals(expectedServiceId, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
     }
 }

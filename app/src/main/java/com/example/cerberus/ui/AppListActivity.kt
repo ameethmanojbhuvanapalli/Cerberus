@@ -1,13 +1,12 @@
 package com.example.cerberus.ui
 
 import android.app.Activity
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Process
 import android.provider.Settings
+import android.text.TextUtils
 import android.widget.*
 import com.example.cerberus.R
 import com.example.cerberus.data.SharedPreferencesUtil
@@ -17,7 +16,7 @@ class AppListActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!hasUsageStatsPermission(this) || !Settings.canDrawOverlays(this)) {
+        if (!isAccessibilityServiceEnabled(this) || !Settings.canDrawOverlays(this)) {
             val intent = Intent(this, PermissionHelperActivity::class.java)
             startActivity(intent)
             finish()
@@ -52,13 +51,23 @@ class AppListActivity : Activity() {
         }
     }
 
-    private fun hasUsageStatsPermission(context: Context): Boolean {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            context.packageName
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val expectedComponentName = "$packageName/com.example.cerberus.service.AppLockService"
+        val enabledServicesSetting = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
-        return mode == AppOpsManager.MODE_ALLOWED
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+
+        if (enabledServicesSetting != null) {
+            colonSplitter.setString(enabledServicesSetting)
+            while (colonSplitter.hasNext()) {
+                val componentName = colonSplitter.next()
+                if (componentName.equals(expectedComponentName, ignoreCase = true)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }
