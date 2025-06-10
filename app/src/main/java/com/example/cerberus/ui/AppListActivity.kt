@@ -10,6 +10,7 @@ import android.text.TextUtils
 import android.widget.*
 import com.example.cerberus.R
 import com.example.cerberus.data.SharedPreferencesUtil
+import com.example.cerberus.model.AppInfo
 
 class AppListActivity : Activity() {
 
@@ -27,26 +28,25 @@ class AppListActivity : Activity() {
 
         val listView: ListView = findViewById(R.id.app_list_view)
         val pm = packageManager
+
         val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .map { it.packageName }
-            .sorted()
+            .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+            .map {
+                AppInfo(
+                    it.packageName,
+                    pm.getApplicationLabel(it).toString(),
+                    pm.getApplicationIcon(it)
+                )
+            }
+            .sortedBy { it.appName.lowercase() }
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, apps)
+        val lockedApps = SharedPreferencesUtil.getLockedApps(this).toMutableSet()
+        val adapter = AppListAdapter(this, apps, lockedApps)
         listView.adapter = adapter
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-
-        val lockedApps = SharedPreferencesUtil.getLockedApps(this)
-        apps.forEachIndexed { index, app ->
-            if (lockedApps.contains(app)) listView.setItemChecked(index, true)
-        }
 
         val saveButton: Button = findViewById(R.id.save_button)
         saveButton.setOnClickListener {
-            val selectedApps = mutableSetOf<String>()
-            for (i in 0 until listView.count) {
-                if (listView.isItemChecked(i)) selectedApps.add(apps[i])
-            }
-            SharedPreferencesUtil.setLockedApps(this, selectedApps)
+            SharedPreferencesUtil.setLockedApps(this, adapter.getLockedApps())
             Toast.makeText(this, "Locked apps saved", Toast.LENGTH_SHORT).show()
         }
     }
