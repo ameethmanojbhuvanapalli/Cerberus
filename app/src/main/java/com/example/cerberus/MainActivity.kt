@@ -1,47 +1,67 @@
 package com.example.cerberus
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.cerberus.ui.theme.CerberusTheme
+import com.example.cerberus.data.SharedPreferencesUtil
+import com.example.cerberus.model.AppInfo
+import com.example.cerberus.ui.AppListActivity
+import com.example.cerberus.ui.PermissionHelperActivity
+import com.example.cerberus.utils.PermissionManager
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            CerberusTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        setContentView(R.layout.activity_main)
+
+        findViewById<Button>(R.id.button_add_apps).setOnClickListener {
+            startActivity(Intent(this, AppListActivity::class.java))
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    override fun onResume() {
+        super.onResume()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CerberusTheme {
-        Greeting("Android")
+        if (!PermissionManager.hasOverlayPermission(this) ||
+            !PermissionManager.hasAccessibilityPermission(this)
+        ) {
+            startActivity(Intent(this, PermissionHelperActivity::class.java))
+            finish()
+            return
+        }
+
+        displaySecuredApps()
+    }
+
+    private fun displaySecuredApps() {
+        val container = findViewById<LinearLayout>(R.id.secured_apps_container)
+        container.removeAllViews()
+
+        val lockedApps = SharedPreferencesUtil.getLockedApps(this)
+        val pm = packageManager
+
+        val securedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            .filter { it.packageName in lockedApps }
+            .map {
+                AppInfo(
+                    it.packageName,
+                    pm.getApplicationLabel(it).toString(),
+                    pm.getApplicationIcon(it)
+                )
+            }
+
+        for (app in securedApps) {
+            val appView = TextView(this).apply {
+                text = app.appName
+                setPadding(16, 16, 16, 16)
+                textSize = 16f
+            }
+            container.addView(appView)
+        }
     }
 }
