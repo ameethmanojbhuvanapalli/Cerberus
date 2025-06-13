@@ -19,8 +19,9 @@
         android:layout_weight="1"
         android:textSize="16sp"/>
 
-    <CheckBox
-        android:id="@+id/app_checkbox"
+    <Switch
+        android:id="@+id/app_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 </LinearLayout>

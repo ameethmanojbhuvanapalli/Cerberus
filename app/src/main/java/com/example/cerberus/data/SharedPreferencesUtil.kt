@@ -1,6 +1,7 @@
 package com.example.cerberus.data
 
 import android.content.Context
+import androidx.core.content.edit
 
 object SharedPreferencesUtil {
 
@@ -14,6 +15,6 @@ object SharedPreferencesUtil {
 
     fun setLockedApps(context: Context, apps: Set<String>) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putStringSet(LOCKED_APPS_KEY, apps).apply()
+        prefs.edit { putStringSet(LOCKED_APPS_KEY, apps) }
     }
 }

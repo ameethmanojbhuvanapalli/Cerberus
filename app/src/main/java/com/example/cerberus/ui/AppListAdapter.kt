@@ -25,15 +25,15 @@ class AppListAdapter(
 
         val appIcon = view.findViewById<ImageView>(R.id.app_icon)
         val appName = view.findViewById<TextView>(R.id.app_name)
-        val checkBox = view.findViewById<CheckBox>(R.id.app_checkbox)
+        val appSwitch = view.findViewById<Switch>(R.id.app_switch)
 
         val app = apps[position]
 
         appIcon.setImageDrawable(app.appIcon)
         appName.text = app.appName
-        checkBox.isChecked = lockedApps.contains(app.packageName)
+        appSwitch.isChecked = lockedApps.contains(app.packageName)
 
-        checkBox.setOnCheckedChangeListener { _, isChecked ->
+        appSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) lockedApps.add(app.packageName)
             else lockedApps.remove(app.packageName)
         }
