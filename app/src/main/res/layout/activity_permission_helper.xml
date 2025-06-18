@@ -6,13 +6,13 @@
     android:gravity="center"
     android:padding="16dp">
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_accessibility_permission"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/grant_accessibility_permission" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_overlay_permission"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
