@@ -28,6 +28,7 @@ class AppListActivity : Activity() {
                     pm.getApplicationIcon(it)
                 )
             }
+            .sortedBy { it.appName.lowercase() }
 
         val newLockedSet = lockedApps.toMutableSet()
         val adapter = AppListAdapter(this, unprotectedApps, newLockedSet)

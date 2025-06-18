@@ -31,6 +31,7 @@ class AppListAdapter(
 
         appIcon.setImageDrawable(app.appIcon)
         appName.text = app.appName
+        appSwitch.setOnCheckedChangeListener(null)
         appSwitch.isChecked = lockedApps.contains(app.packageName)
 
         appSwitch.setOnCheckedChangeListener { _, isChecked ->

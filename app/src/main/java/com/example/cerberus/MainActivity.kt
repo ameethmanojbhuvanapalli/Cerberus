@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             } catch (e: PackageManager.NameNotFoundException) {
                 null
             }
-        }
+        }.sortedBy { it.appName.lowercase() }
 
         val listView = findViewById<ListView>(R.id.secured_apps_list_view)
         val adapter = AppListAdapter(this, securedApps, lockedApps)
