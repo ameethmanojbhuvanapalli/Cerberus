@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
             val adapter = findViewById<ListView>(R.id.secured_apps_list_view).adapter as? AppListAdapter
             adapter?.let {
                 SharedPreferencesUtil.setLockedApps(this, it.getLockedApps())
+                displaySecuredApps()
             }
         }
     }

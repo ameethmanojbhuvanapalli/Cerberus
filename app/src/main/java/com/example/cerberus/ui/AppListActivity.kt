@@ -19,8 +19,11 @@ class AppListActivity : Activity() {
         val lockedApps = SharedPreferencesUtil.getLockedApps(this)
 
         val unprotectedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
-            .filter { it.packageName !in lockedApps }
+            .filter {
+                pm.getLaunchIntentForPackage(it.packageName) != null &&
+                        it.packageName != packageName && // Exclude your own app
+                        it.packageName !in lockedApps
+            }
             .map {
                 AppInfo(
                     it.packageName,
