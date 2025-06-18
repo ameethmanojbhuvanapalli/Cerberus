@@ -10,13 +10,13 @@
         android:id="@+id/button_accessibility_permission"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Grant Usage Access" />
+        android:text="@string/grant_accessibility_permission" />
 
     <Button
         android:id="@+id/button_overlay_permission"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Grant Overlay Permission" />
+        android:text="@string/grant_overlay_permission" />
 
 </LinearLayout>

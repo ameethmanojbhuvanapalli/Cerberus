@@ -10,7 +10,7 @@
         android:id="@+id/secured_apps_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Secured Apps"
+        android:text="@string/secured_apps"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal" />
@@ -26,7 +26,7 @@
         android:id="@+id/save_secured_apps_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save Changes"
+        android:text="@string/save_changes"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp" />
 </LinearLayout>
