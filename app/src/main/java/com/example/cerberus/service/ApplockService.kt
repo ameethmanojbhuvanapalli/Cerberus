@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.view.accessibility.AccessibilityEvent
-import com.example.cerberus.data.SharedPreferencesUtil
+import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.utils.BiometricAuthManager
 
 class AppLockService : AccessibilityService() {
@@ -34,7 +34,7 @@ class AppLockService : AccessibilityService() {
             if (foregroundApp == packageName || foregroundApp == BiometricAuthManager::class.java.name) {
                 return
             }
-            val lockedApps = SharedPreferencesUtil.getLockedApps(this)
+            val lockedApps = LockedAppsCache.getLockedApps(this)
             if (foregroundApp != null) {
                 if (lockedApps.contains(foregroundApp)) {
                     if (!isAuthenticated || foregroundApp != lastLockedApp) {

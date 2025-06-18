@@ -5,8 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.*
 import com.example.cerberus.R
-import com.example.cerberus.data.SharedPreferencesUtil
-import com.example.cerberus.model.AppInfo
+import com.example.cerberus.data.AppInfoCache
+import com.example.cerberus.data.LockedAppsCache
 
 class AppListActivity : Activity() {
 
@@ -16,7 +16,7 @@ class AppListActivity : Activity() {
 
         val listView: ListView = findViewById(R.id.app_list_view)
         val pm = packageManager
-        val lockedApps = SharedPreferencesUtil.getLockedApps(this)
+        val lockedApps = LockedAppsCache.getLockedApps(this)
 
         val unprotectedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
             .filter {
@@ -24,12 +24,8 @@ class AppListActivity : Activity() {
                         it.packageName != packageName && // Exclude your own app
                         it.packageName !in lockedApps
             }
-            .map {
-                AppInfo(
-                    it.packageName,
-                    pm.getApplicationLabel(it).toString(),
-                    pm.getApplicationIcon(it)
-                )
+            .mapNotNull {
+                AppInfoCache.getAppInfo(this, it.packageName)
             }
             .sortedBy { it.appName.lowercase() }
 
@@ -39,7 +35,7 @@ class AppListActivity : Activity() {
 
         val saveButton: Button = findViewById(R.id.save_button)
         saveButton.setOnClickListener {
-            SharedPreferencesUtil.setLockedApps(this, adapter.getLockedApps())
+            LockedAppsCache.setLockedApps(this, adapter.getLockedApps())
             setResult(RESULT_OK)
             finish()
         }
