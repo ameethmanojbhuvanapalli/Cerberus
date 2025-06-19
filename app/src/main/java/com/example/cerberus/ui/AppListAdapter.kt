@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import com.example.cerberus.R
 import com.example.cerberus.model.AppInfo
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class AppListAdapter(
     context: Context,
@@ -25,7 +26,7 @@ class AppListAdapter(
 
         val appIcon = view.findViewById<ImageView>(R.id.app_icon)
         val appName = view.findViewById<TextView>(R.id.app_name)
-        val appSwitch = view.findViewById<Switch>(R.id.app_switch)
+        val appSwitch = view.findViewById<SwitchMaterial>(R.id.app_switch)
 
         val app = apps[position]
 

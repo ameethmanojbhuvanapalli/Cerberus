@@ -15,6 +15,7 @@
         android:id="@+id/save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/save_locked_apps"/>
+        android:text="@string/save_locked_apps"
+        android:textColor="#000000" />
 
 </LinearLayout>
