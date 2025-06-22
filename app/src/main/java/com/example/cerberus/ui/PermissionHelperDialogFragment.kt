@@ -10,6 +10,18 @@ import com.google.android.material.button.MaterialButton
 
 class PermissionHelperDialogFragment : DialogFragment() {
 
+    private var permissionGrantedCallback: (() -> Unit)? = null
+
+    fun setPermissionGrantedCallback(callback: () -> Unit) {
+        permissionGrantedCallback = callback
+    }
+
+    // Call this when permissions are granted
+    fun notifyPermissionsGranted() {
+        permissionGrantedCallback?.invoke()
+        dismiss()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.dialog_permission_helper, container, false)
     }
@@ -38,7 +50,7 @@ class PermissionHelperDialogFragment : DialogFragment() {
         if (PermissionManager.hasAccessibilityPermission(requireContext()) &&
             PermissionManager.hasOverlayPermission(requireContext())
         ) {
-            dismiss()
+            notifyPermissionsGranted()
         }
     }
 
