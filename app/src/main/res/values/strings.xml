@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Cerberus</string>
-    <string name="secure_more_apps">Secure More Apps</string>
-    <string name="save_locked_apps">Save Locked Apps</string>
+    <string name="secured_apps_text">%1$d apps secured</string>
+    <string name="locked">Locked</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="save">Save</string>
+    <string name="app_lock">App Lock</string>
+    <string name="secure_your_apps">Secure your apps</string>
+    <string name="more_features">More Features</string>
     <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
     <string name="grant_overlay_permission">Grant Overlay Permission</string>
-    <string name="save_changes">Save Changes</string>
-    <string name="secured_apps">Secured Apps</string>
 </resources>

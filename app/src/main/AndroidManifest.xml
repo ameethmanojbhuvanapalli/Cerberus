@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.AppListActivity"
+        <activity android:name=".ui.AppListTabsActivity"
             android:exported="true" />
 
         <activity android:name=".ui.PermissionHelperActivity"

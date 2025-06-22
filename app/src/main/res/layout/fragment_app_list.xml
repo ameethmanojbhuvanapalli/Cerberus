@@ -2,20 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
     <ListView
         android:id="@+id/app_list_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:divider="@color/transparent"
+        android:dividerHeight="8dp"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/save_locked_apps"
-        android:textColor="#000000" />
-
+        android:text="@string/save"
+        android:layout_margin="16dp"/>
 </LinearLayout>
