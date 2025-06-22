@@ -10,6 +10,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 class AppListTabsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_app_list_tabs)
 
         val viewPager: ViewPager2 = findViewById(R.id.view_pager)

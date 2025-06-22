@@ -9,6 +9,7 @@
         <item name="colorSurface">@color/surface_black</item>
         <item name="colorOnSurface">@color/white</item>
         <item name="colorAccent">@color/red_primary</item>
+        <item name="android:windowBackground">@drawable/bg_gradient_black</item>
     </style>
 
     <style name="SecureBlockerTheme" parent="Theme.AppCompat.Light.NoActionBar">

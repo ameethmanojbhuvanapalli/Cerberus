@@ -1,13 +1,13 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/red_gradient_start"/>
+            <solid android:color="@color/colorAccent"/>
             <corners android:radius="24dp"/>
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/black_gradient_start"/>
+            <solid android:color="@color/surface_black"/>
             <corners android:radius="24dp"/>
         </shape>
     </item>

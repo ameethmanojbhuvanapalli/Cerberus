@@ -11,7 +11,7 @@ class PermissionHelperActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_permission_helper)
+        setContentView(R.layout.dialog_permission_helper)
 
         val accessibilityButton: Button = findViewById(R.id.button_accessibility_permission)
         val overlayButton: Button = findViewById(R.id.button_overlay_permission)

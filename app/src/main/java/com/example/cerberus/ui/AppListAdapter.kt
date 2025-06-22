@@ -47,10 +47,10 @@ class AppListAdapter(
         // Set lock icon and card color
         if (isLocked) {
             viewHolder.lockIcon.setImageResource(R.drawable.ic_lock)
-            viewHolder.card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.red_gradient_start))
+            viewHolder.card.setBackgroundResource(R.drawable.bg_gradient_red)
         } else {
             viewHolder.lockIcon.setImageResource(R.drawable.ic_lock_open)
-            viewHolder.card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.surface_black))
+            viewHolder.card.setBackgroundResource(R.drawable.bg_gradient_black)
         }
 
         // Toggle lock state on click

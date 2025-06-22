@@ -11,4 +11,8 @@
     <string name="lock_status">Lock status</string>
     <string name="tab_locked">Protected</string>
     <string name="tab_unlocked">Unprotected</string>
+    <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
+    <string name="grant_overlay_permission">Grant Overlay Permission</string>
+    <string name="permissions_required">Permissions Required</string>
+    <string name="permissions_desc">To fully secure your apps, Cerberus needs Accessibility and Overlay permissions. Please grant them below.</string>
 </resources>
