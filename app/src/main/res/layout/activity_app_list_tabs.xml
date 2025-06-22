@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabIndicatorFullWidth="false"
-        app:tabIndicator="@drawable/tab_indicator_pill"
+        app:tabIndicator="@drawable/bg_indicator_pill"
         app:tabSelectedTextColor="@color/black"
         app:tabTextColor="@color/gray"
-        app:tabBackground="@drawable/tab_bg_pill"
+        app:tabBackground="@drawable/bg_tab_pill"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp"
         android:background="@color/black"/>
