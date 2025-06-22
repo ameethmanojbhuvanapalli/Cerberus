@@ -24,12 +24,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-//        if (!PermissionManager.hasOverlayPermission(this) ||
-//            !PermissionManager.hasAccessibilityPermission(this)
-//        ) {
-//            PermissionHelperDialogFragment().show(supportFragmentManager, "perm_dialog")
-//            return
-//        }
+        if (!PermissionManager.hasOverlayPermission(this) ||
+            !PermissionManager.hasAccessibilityPermission(this)
+        ) {
+            PermissionHelperDialogFragment().show(supportFragmentManager, "perm_dialog")
+            return
+        }
         updateSecuredAppsCount()
     }
 

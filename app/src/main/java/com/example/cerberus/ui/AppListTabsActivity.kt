@@ -22,4 +22,12 @@ class AppListTabsActivity : AppCompatActivity() {
             tab.text = if (position == 0) "Locked" else "Unlocked"
         }.attach()
     }
+
+    fun refreshAllTabs() {
+        for (fragment in supportFragmentManager.fragments) {
+            if (fragment is AppListFragment) {
+                fragment.refreshList()
+            }
+        }
+    }
 }

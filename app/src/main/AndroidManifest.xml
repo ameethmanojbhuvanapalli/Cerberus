@@ -26,9 +26,6 @@
         <activity android:name=".ui.AppListTabsActivity"
             android:exported="true" />
 
-        <activity android:name=".ui.PermissionHelperActivity"
-            android:exported="true" />
-
         <activity
             android:name=".utils.BiometricAuthManager"
             android:theme="@style/SecureBlockerTheme"

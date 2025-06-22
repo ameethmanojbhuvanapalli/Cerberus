@@ -52,7 +52,8 @@ class AppListFragment : Fragment() {
         saveButton.setOnClickListener {
             adapter?.let {
                 LockedAppsCache.setLockedApps(context, it.getLockedApps())
-                // Optionally show a toast or update UI
+                (activity as? AppListTabsActivity)?.refreshAllTabs()
+                android.widget.Toast.makeText(context, "Changes saved!", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -66,5 +67,26 @@ class AppListFragment : Fragment() {
             }
             return fragment
         }
+    }
+
+    fun refreshList() {
+        val context = requireContext()
+        val pm = context.packageManager
+        val allLockedApps = LockedAppsCache.getLockedApps(context)
+        // repeat your filtering logic here...
+        val apps = pm.getInstalledApplications(0)
+            .filter { pm.getLaunchIntentForPackage(it.packageName) != null && it.packageName != context.packageName }
+            .mapNotNull { AppInfoCache.getAppInfo(context, it.packageName) }
+            .sortedBy { it.appName.lowercase() }
+
+        val filteredApps = if (isLockedPage) {
+            apps.filter { allLockedApps.contains(it.packageName) }
+        } else {
+            apps.filter { !allLockedApps.contains(it.packageName) }
+        }
+
+        adapter = AppListAdapter(context, filteredApps, allLockedApps.toMutableSet())
+        val listView: ListView = view?.findViewById(R.id.app_list_view) ?: return
+        listView.adapter = adapter
     }
 }

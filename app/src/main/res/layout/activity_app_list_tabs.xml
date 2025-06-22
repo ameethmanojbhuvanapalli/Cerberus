@@ -13,7 +13,7 @@
         app:tabTextAppearance="@style/TabTextAppearance"
         app:tabSelectedTextAppearance="@style/TabTextAppearanceSelected"
         app:tabIndicatorFullWidth="false"
-        app:tabIndicator="@drawable/bg_gradient_red"
+        app:tabIndicator="@color/red_dark"
         app:tabSelectedTextColor="@color/white"
         app:tabTextColor="@color/gray"
         app:tabBackground="@drawable/bg_tab_pill"

@@ -1,8 +1,10 @@
 <resources>
     <color name="red_primary">#D7263D</color> <!-- A deep red, or pick your preferred shade -->
-    <color name="red_dark">#A41320</color>    <!-- Even deeper red for variants -->
+    <color name="red_dark">#A41320</color>
     <color name="red_gradient_start">#D7263D</color>
     <color name="red_gradient_end">#A41320</color>
+    <color name="red_dark_gradient_start">#7A1621</color>
+    <color name="red_dark_gradient_end">#4B0E13</color>
     <color name="black">#000000</color>
     <color name="black_gradient_start">#232526</color>
     <color name="black_gradient_end">#000000</color>

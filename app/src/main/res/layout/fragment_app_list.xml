@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,11 +17,14 @@
         android:clipToPadding="false"
         android:background="@color/transparent"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/save"
-        android:background="@drawable/bg_gradient_red"
-        android:layout_margin="16dp"/>
+        android:background="@color/gray"
+        android:layout_margin="16dp"
+        app:icon="@drawable/ic_save"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"/>
 </LinearLayout>
