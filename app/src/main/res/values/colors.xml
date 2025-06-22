@@ -4,6 +4,8 @@
     <color name="red_gradient_start">#D7263D</color>
     <color name="red_gradient_end">#A41320</color>
     <color name="black">#000000</color>
+    <color name="black_gradient_start">#232526</color>
+    <color name="black_gradient_end">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="surface_black">#1A1A1A</color>
     <color name="gray">#888888</color>

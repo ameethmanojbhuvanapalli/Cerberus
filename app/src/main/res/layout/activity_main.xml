@@ -25,7 +25,7 @@
             android:layout_marginBottom="32dp">
 
             <LinearLayout
-                android:background="@drawable/bg_card_gradient"
+                android:background="@drawable/bg_gradient_red"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

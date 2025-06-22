@@ -7,6 +7,8 @@
     <string name="app_lock">App Lock</string>
     <string name="secure_your_apps">Secure your apps</string>
     <string name="more_features">More Features</string>
-    <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
-    <string name="grant_overlay_permission">Grant Overlay Permission</string>
+    <string name="app_icon">App icon</string>
+    <string name="lock_status">Lock status</string>
+    <string name="tab_locked">Protected</string>
+    <string name="tab_unlocked">Unprotected</string>
 </resources>
