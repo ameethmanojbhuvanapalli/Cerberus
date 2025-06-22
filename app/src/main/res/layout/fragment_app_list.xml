@@ -14,7 +14,7 @@
         android:dividerHeight="8dp"
         android:padding="8dp"
         android:clipToPadding="false"
-        android:background="@color/surface_black"/>
+        android:background="@color/transparent"/>
 
     <Button
         android:id="@+id/save_button"

@@ -4,16 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/black">
+    android:background="@color/transparent">
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:tabTextAppearance="@style/TabTextAppearance"
+        app:tabSelectedTextAppearance="@style/TabTextAppearanceSelected"
         app:tabIndicatorFullWidth="false"
-        app:tabIndicator="@drawable/bg_tab_pill"
-        app:tabSelectedTextColor="@color/black"
-        app:tabTextColor="@color/white"
+        app:tabIndicator="@drawable/bg_gradient_red"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextColor="@color/gray"
         app:tabBackground="@drawable/bg_tab_pill"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp"

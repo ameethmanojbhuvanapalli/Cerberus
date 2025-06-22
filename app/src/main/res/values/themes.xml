@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.Cerberus" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Cerberus" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/red_primary</item>
         <item name="colorPrimaryVariant">@color/red_dark</item>
         <item name="colorOnPrimary">@color/white</item>
