@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import com.example.cerberus.ui.AppListTabsActivity
 import com.example.cerberus.ui.PermissionHelperDialogFragment
 import com.example.cerberus.utils.PermissionManager
@@ -35,27 +34,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Another Feature Card Example
-        binding.featureCard2.apply {
-            setTitle("Another Feature")
-            setDescription("Feature description goes here.")
-            setPillText("NEW")
-            setIcon(R.drawable.ic_launcher_foreground)
-            setIconContentDescription("Another Feature")
-            setOnClickListener {
-                // Handle this card's click
-            }
-        }
-
         // Observe locked apps count for appLockCard
-        viewModel.lockedAppsCount.observe(this, Observer { count ->
+        viewModel.lockedAppsCount.observe(this) { count ->
             binding.appLockCard.setPillText(getString(R.string.secured_apps_text, count))
-        })
+        }
     }
 
     override fun onResume() {
         super.onResume()
-//        checkPermissionsAndUpdateUI()
+        checkPermissionsAndUpdateUI()
     }
 
     private fun checkPermissionsAndUpdateUI() {
