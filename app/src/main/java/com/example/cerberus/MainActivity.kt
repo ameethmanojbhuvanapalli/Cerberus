@@ -23,20 +23,39 @@ class MainActivity : AppCompatActivity() {
         // Preload app info in ViewModel
         viewModel.preloadAppInfo(this)
 
-        binding.appLockCard.setOnClickListener {
-            startActivity(Intent(this, AppListTabsActivity::class.java))
+        // App Lock Card
+        binding.appLockCard.apply {
+            setTitle(getString(R.string.app_lock))
+            setDescription(getString(R.string.secure_your_apps))
+            setPillText(getString(R.string.secured_apps_text, 0)) // will update via observer
+            setIcon(R.drawable.ic_lock_fill)
+            setIconContentDescription(getString(R.string.app_lock))
+            setOnClickListener {
+                startActivity(Intent(context, AppListTabsActivity::class.java))
+            }
         }
 
-        // Observe locked apps count
+        // Another Feature Card Example
+        binding.featureCard2.apply {
+            setTitle("Another Feature")
+            setDescription("Feature description goes here.")
+            setPillText("NEW")
+            setIcon(R.drawable.ic_launcher_foreground)
+            setIconContentDescription("Another Feature")
+            setOnClickListener {
+                // Handle this card's click
+            }
+        }
+
+        // Observe locked apps count for appLockCard
         viewModel.lockedAppsCount.observe(this, Observer { count ->
-            val securedAppsText = getString(R.string.secured_apps_text, count)
-            binding.homeAppsSecured.text = securedAppsText
+            binding.appLockCard.setPillText(getString(R.string.secured_apps_text, count))
         })
     }
 
     override fun onResume() {
         super.onResume()
-        checkPermissionsAndUpdateUI()
+//        checkPermissionsAndUpdateUI()
     }
 
     private fun checkPermissionsAndUpdateUI() {
