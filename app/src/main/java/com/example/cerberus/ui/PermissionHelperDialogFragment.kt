@@ -56,9 +56,10 @@ class PermissionHelperDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        // Make dialog fullscreen
-        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_gradient_black) // or your gradient drawable
+        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.setGravity(Gravity.CENTER)
+        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog?.window?.setDimAmount(30f)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?) =
