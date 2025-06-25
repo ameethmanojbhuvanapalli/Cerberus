@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.ui.AppListTabsActivity
-import com.example.cerberus.ui.PermissionHelperDialogFragment
+import com.example.cerberus.ui.PermissionHelperFragment
 import com.example.cerberus.utils.PermissionManager
 import com.example.cerberus.databinding.ActivityMainBinding
 
@@ -19,14 +19,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Preload app info in ViewModel
         viewModel.preloadAppInfo(this)
 
-        // App Lock Card
         binding.appLockCard.apply {
             setTitle(getString(R.string.app_lock))
             setDescription(getString(R.string.secure_your_apps))
-            setPillText(getString(R.string.secured_apps_text, 0)) // will update via observer
+            setPillText(getString(R.string.secured_apps_text, 0))
             setIcon(R.drawable.ic_lock_fill)
             setIconContentDescription(getString(R.string.app_lock))
             setOnClickListener {
@@ -34,7 +32,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Observe locked apps count for appLockCard
         viewModel.lockedAppsCount.observe(this) { count ->
             binding.appLockCard.setPillText(getString(R.string.secured_apps_text, count))
         }
@@ -49,13 +46,29 @@ class MainActivity : AppCompatActivity() {
         if (!PermissionManager.hasOverlayPermission(this) ||
             !PermissionManager.hasAccessibilityPermission(this)
         ) {
-            val dialogFragment = PermissionHelperDialogFragment()
-            dialogFragment.setPermissionGrantedCallback {
+            showPermissionFragment()
+        } else {
+            removePermissionFragmentIfPresent()
+            viewModel.updateLockedAppsCount(this)
+        }
+    }
+
+    private fun showPermissionFragment() {
+        // Avoid multiple fragments
+        if (supportFragmentManager.findFragmentByTag("perm_fragment") == null) {
+            val fragment = PermissionHelperFragment {
                 viewModel.updateLockedAppsCount(this)
             }
-            dialogFragment.show(supportFragmentManager, "perm_dialog")
-        } else {
-            viewModel.updateLockedAppsCount(this)
+            supportFragmentManager.beginTransaction()
+                .add(android.R.id.content, fragment, "perm_fragment")
+                .commitAllowingStateLoss()
+        }
+    }
+
+    private fun removePermissionFragmentIfPresent() {
+        val frag = supportFragmentManager.findFragmentByTag("perm_fragment")
+        if (frag != null) {
+            supportFragmentManager.beginTransaction().remove(frag).commitAllowingStateLoss()
         }
     }
 }

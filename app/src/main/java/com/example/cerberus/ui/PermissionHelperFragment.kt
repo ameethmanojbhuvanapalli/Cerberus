@@ -1,29 +1,25 @@
 package com.example.cerberus.ui
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import com.example.cerberus.R
 import com.example.cerberus.utils.PermissionManager
 import com.google.android.material.button.MaterialButton
 
-class PermissionHelperDialogFragment : DialogFragment() {
+class PermissionHelperFragment(
+    private val onPermissionsGranted: () -> Unit
+) : Fragment() {
 
-    private var permissionGrantedCallback: (() -> Unit)? = null
-
-    fun setPermissionGrantedCallback(callback: () -> Unit) {
-        permissionGrantedCallback = callback
-    }
-
-    // Call this when permissions are granted
-    fun notifyPermissionsGranted() {
-        permissionGrantedCallback?.invoke()
-        dismiss()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.dialog_permission_helper, container, false)
+        return inflater.inflate(R.layout.fragment_permission_helper, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,25 +42,11 @@ class PermissionHelperDialogFragment : DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        // Auto-dismiss if permissions granted
         if (PermissionManager.hasAccessibilityPermission(requireContext()) &&
             PermissionManager.hasOverlayPermission(requireContext())
         ) {
-            notifyPermissionsGranted()
+            parentFragmentManager.beginTransaction().remove(this).commitAllowingStateLoss()
+            onPermissionsGranted()
         }
     }
-
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        dialog?.window?.setGravity(Gravity.CENTER)
-        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog?.window?.setDimAmount(30f)
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?) =
-        super.onCreateDialog(savedInstanceState).apply {
-            setCancelable(false)
-            setCanceledOnTouchOutside(false)
-        }
 }
