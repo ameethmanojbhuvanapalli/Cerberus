@@ -26,13 +26,12 @@
             android:exported="true" />
 
         <activity
-            android:name=".utils.BiometricAuthManager"
-            android:theme="@style/SecureBlockerTheme"
+            android:name=".ui.BiometricPromptActivity"
+            android:exported="false"
             android:launchMode="singleInstance"
-            android:excludeFromRecents="true"
             android:taskAffinity=""
-            android:exported="false" />
-
+            android:theme="@style/SecureBlockerTheme"
+            android:excludeFromRecents="true" />
 
         <service
             android:name=".service.AppLockService"
