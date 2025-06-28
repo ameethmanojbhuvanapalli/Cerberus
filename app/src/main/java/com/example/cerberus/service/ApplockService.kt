@@ -42,38 +42,40 @@ class AppLockService : AccessibilityService(), AuthenticationCallback {
         val foregroundApp = event.packageName?.toString() ?: return
 
         // Skip authentication check if the BiometricPromptActivity is showing
-        if (foregroundApp == promptActivityName) return
+        if (foregroundApp == myPackageName && foregroundApp.contains(promptActivityName)) return
 
-        if (currentForegroundApp != null && currentForegroundApp != foregroundApp) {
-            updateExpirationForAppExit(currentForegroundApp!!)
+        if (currentForegroundApp != foregroundApp) {
+            // True app switch - from one package to another
+            if (currentForegroundApp != null) {
+                updateExpirationForAppExit(currentForegroundApp!!)
+            }
 
             // Only perform cleanup when truly switching apps
             if (authenticatedApps.size > 10) {
                 cleanupExpiredEntries()
             }
+
+            currentForegroundApp = foregroundApp
+
+            val lockedApps = LockedAppsCache.getLockedApps(this)
+
+            val needsAuth = lockedApps.contains(foregroundApp) || foregroundApp == myPackageName
+            if (!needsAuth) return
+
+            // Handle authentication flow
+            if (foregroundApp == myPackageName && foregroundApp == pendingAuthentication) {
+                pendingAuthentication = null
+                return
+            }
+
+            // Fast path: check if authenticated and return quickly if so
+            val authTime = authenticatedApps[foregroundApp]
+            if (authTime != null && System.currentTimeMillis() <= authTime) return
+
+            // Slow path: needs authentication
+            pendingAuthentication = foregroundApp
+            authenticator.authenticate(this, foregroundApp)
         }
-
-        // Update current foreground app (regardless if it's a new activity or new app)
-        currentForegroundApp = foregroundApp
-
-        val lockedApps = LockedAppsCache.getLockedApps(this)
-
-        val needsAuth = lockedApps.contains(foregroundApp) || foregroundApp == myPackageName
-        if (!needsAuth) return
-
-        // Handle authentication flow
-        if (foregroundApp == myPackageName && foregroundApp == pendingAuthentication) {
-            pendingAuthentication = null
-            return
-        }
-
-        // Fast path: check if authenticated and return quickly if so
-        val authTime = authenticatedApps[foregroundApp]
-        if (authTime != null && System.currentTimeMillis() <= authTime) return
-
-        // Slow path: needs authentication
-        pendingAuthentication = foregroundApp
-        authenticator.authenticate(this, foregroundApp)
     }
 
     private fun cleanupExpiredEntries() {
