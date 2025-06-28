@@ -19,6 +19,7 @@ class AuthenticationService(context: Context) {
     private val authManager = AuthenticationManager.getInstance(appContext)
     private val authenticator: Authenticator
     private val authenticatedApps = ConcurrentHashMap<String, Long>()
+    private val pendingAuthApps = ConcurrentHashMap.newKeySet<String>() // Track pending auth per package
     private val callbacks = mutableListOf<AuthenticationCallback>()
     private val TAG = "AuthenticationService"
 
@@ -47,6 +48,10 @@ class AuthenticationService(context: Context) {
         Log.d(TAG, "Authentication service initialized")
     }
 
+    /**
+     * Request authentication for the given package if not already authenticated or pending.
+     * Returns true if authentication prompt was launched, false otherwise.
+     */
     fun requestAuthenticationIfNeeded(packageName: String): Boolean {
         val authTime = authenticatedApps[packageName]
         val now = System.currentTimeMillis()
@@ -55,7 +60,13 @@ class AuthenticationService(context: Context) {
             return false
         }
 
+        if (pendingAuthApps.contains(packageName)) {
+            Log.d(TAG, "Skipping authentication for $packageName: authentication already pending")
+            return false
+        }
+
         Log.d(TAG, "Requesting authentication for $packageName")
+        pendingAuthApps.add(packageName)
         authenticator.authenticate(appContext, packageName)
         return true
     }
@@ -98,6 +109,7 @@ class AuthenticationService(context: Context) {
     private fun handleAuthenticationSuccess(packageName: String) {
         Log.d(TAG, "Authentication succeeded for $packageName")
         authenticatedApps[packageName] = Long.MAX_VALUE
+        pendingAuthApps.remove(packageName) // Remove from pending
 
         // Notify callbacks
         synchronized(callbacks) {
@@ -108,6 +120,7 @@ class AuthenticationService(context: Context) {
     private fun handleAuthenticationFailure(packageName: String) {
         Log.d(TAG, "Authentication failed for $packageName")
         authenticatedApps.remove(packageName)
+        pendingAuthApps.remove(packageName) // Remove from pending
 
         // Notify callbacks
         synchronized(callbacks) {

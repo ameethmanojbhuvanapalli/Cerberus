@@ -2,8 +2,6 @@ package com.example.cerberus.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import androidx.biometric.BiometricManager
@@ -14,6 +12,7 @@ import androidx.activity.OnBackPressedCallback
 
 class BiometricPromptActivity : FragmentActivity() {
     private val TAG = "BiometricPromptActivity"
+    private var packageNameToAuth: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -22,6 +21,7 @@ class BiometricPromptActivity : FragmentActivity() {
         )
         super.onCreate(savedInstanceState)
         Log.d(TAG, "BiometricPromptActivity created")
+        packageNameToAuth = intent?.getStringExtra("packageName") ?: applicationContext.packageName
 
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
@@ -32,6 +32,26 @@ class BiometricPromptActivity : FragmentActivity() {
             }
         )
         showBiometricPrompt()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Always send a "prompt finished" broadcast
+        sendPromptFinishedBroadcast()
+    }
+
+    private fun sendPromptFinishedBroadcast() {
+        val intent = Intent("com.example.cerberus.AUTH_PROMPT_FINISHED")
+        intent.putExtra("packageName", packageNameToAuth)
+        sendBroadcast(intent)
+    }
+
+    private fun goToHomeAndFinish() {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun showBiometricPrompt() {
@@ -57,21 +77,16 @@ class BiometricPromptActivity : FragmentActivity() {
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     Log.d(TAG, "Authentication error: $errorCode - $errString")
-
                     when (errorCode) {
                         BiometricPrompt.ERROR_USER_CANCELED,
                         BiometricPrompt.ERROR_CANCELED -> {
-                            Log.d(TAG, "User canceled authentication, showing prompt again")
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                if (!isFinishing) {
-                                    showBiometricPrompt()
-                                }
-                            }, 100)
+                            Log.d(TAG, "User canceled authentication, returning to home")
+                            goToHomeAndFinish()
                         }
                         else -> {
                             val intent = Intent("com.example.cerberus.AUTH_FAILURE")
                             sendBroadcast(intent)
-                            finish()
+                            goToHomeAndFinish()
                         }
                     }
                 }
