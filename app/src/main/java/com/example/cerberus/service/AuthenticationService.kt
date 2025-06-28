@@ -1,0 +1,136 @@
+package com.example.cerberus.service
+
+import android.content.Context
+import android.util.Log
+import com.example.cerberus.auth.AuthenticationCallback
+import com.example.cerberus.auth.AuthenticationManager
+import com.example.cerberus.auth.Authenticator
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * Service to handle authentication operations.
+ *
+ * IMPORTANT: This class should be instantiated with application context
+ * to prevent memory leaks.
+ */
+class AuthenticationService(context: Context) {
+    // Always use application context to prevent leaks
+    private val appContext = context.applicationContext
+    private val authManager = AuthenticationManager.getInstance(appContext)
+    private val authenticator: Authenticator
+    private val pendingAuthentications = ConcurrentHashMap<String, Boolean>()
+    private val authenticatedApps = ConcurrentHashMap<String, Long>()
+    private val callbacks = mutableListOf<AuthenticationCallback>()
+    private val TAG = "AuthenticationService"
+
+    // Store a reference to our internal callback
+    private val internalCallback: AuthenticationCallback
+
+    private val IDLE_TIMEOUT_MS = 15 * 1000L
+
+    init {
+        authenticator = authManager.getCurrentAuthenticator()
+
+        // Create and store the callback
+        internalCallback = object : AuthenticationCallback {
+            override fun onAuthenticationSucceeded(packageName: String) {
+                handleAuthenticationSuccess(packageName)
+            }
+
+            override fun onAuthenticationFailed(packageName: String) {
+                handleAuthenticationFailure(packageName)
+            }
+        }
+
+        // Register the callback
+        authenticator.registerCallback(internalCallback)
+
+        Log.d(TAG, "Authentication service initialized")
+    }
+
+    fun requestAuthenticationIfNeeded(packageName: String): Boolean {
+        // Already authenticated?
+        val authTime = authenticatedApps[packageName]
+        if (authTime != null && System.currentTimeMillis() <= authTime) {
+            return false
+        }
+
+        // Already authenticating?
+        synchronized(pendingAuthentications) {
+            if (pendingAuthentications.containsKey(packageName)) {
+                return false
+            }
+            pendingAuthentications[packageName] = true
+        }
+
+        // Start authentication
+        Log.d(TAG, "Requesting authentication for $packageName")
+        authenticator.authenticate(appContext, packageName)
+        return true
+    }
+
+    fun registerCallback(callback: AuthenticationCallback) {
+        synchronized(callbacks) {
+            if (!callbacks.contains(callback)) {
+                callbacks.add(callback)
+                Log.d(TAG, "Callback registered, total callbacks: ${callbacks.size}")
+            }
+        }
+    }
+
+    fun unregisterCallback(callback: AuthenticationCallback) {
+        synchronized(callbacks) {
+            callbacks.remove(callback)
+            Log.d(TAG, "Callback unregistered, remaining callbacks: ${callbacks.size}")
+        }
+    }
+
+    fun cleanupExpiredEntries() {
+        val currentTime = System.currentTimeMillis()
+        val iterator = authenticatedApps.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (entry.value != Long.MAX_VALUE && entry.value < currentTime) {
+                iterator.remove()
+            }
+        }
+    }
+
+    fun updateExpirationForAppExit(packageName: String) {
+        authenticatedApps[packageName]?.let {
+            if (it == Long.MAX_VALUE) {
+                authenticatedApps[packageName] = System.currentTimeMillis() + IDLE_TIMEOUT_MS
+            }
+        }
+    }
+
+    private fun handleAuthenticationSuccess(packageName: String) {
+        Log.d(TAG, "Authentication succeeded for $packageName")
+        authenticatedApps[packageName] = Long.MAX_VALUE
+        synchronized(pendingAuthentications) {
+            pendingAuthentications.remove(packageName)
+        }
+
+        // Notify callbacks
+        synchronized(callbacks) {
+            callbacks.forEach { it.onAuthenticationSucceeded(packageName) }
+        }
+    }
+
+    private fun handleAuthenticationFailure(packageName: String) {
+        Log.d(TAG, "Authentication failed for $packageName")
+        authenticatedApps.remove(packageName)
+        synchronized(pendingAuthentications) {
+            pendingAuthentications.remove(packageName)
+        }
+
+        // Notify callbacks
+        synchronized(callbacks) {
+            callbacks.forEach { it.onAuthenticationFailed(packageName) }
+        }
+    }
+
+    fun shutdown() {
+        authenticator.unregisterCallback(internalCallback)
+    }
+}

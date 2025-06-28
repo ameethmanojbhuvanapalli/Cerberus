@@ -4,22 +4,12 @@ import android.accessibilityservice.AccessibilityService
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.example.cerberus.auth.AuthenticationCallback
-import com.example.cerberus.auth.Authenticator
-import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.data.LockedAppsCache
-import java.util.concurrent.ConcurrentHashMap
 
-class AppLockService : AccessibilityService(), AuthenticationCallback {
-
-    private val authenticatedApps = ConcurrentHashMap<String, Long>()
+class AppLockService : AccessibilityService() {
     private var currentForegroundApp: String? = null
-    private var pendingAuthentication: String? = null
-
-    private lateinit var authenticator: Authenticator
-
-    private val IDLE_TIMEOUT_MS = 15 * 1000L
+    private lateinit var authService: AuthenticationService
     private val TAG = "AppLockService"
-
     private lateinit var myPackageName: String
     private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
 
@@ -27,12 +17,10 @@ class AppLockService : AccessibilityService(), AuthenticationCallback {
         super.onServiceConnected()
         myPackageName = packageName
 
-        // Initialize the authenticator
-        authenticator = AuthenticationManager.getInstance(this).getCurrentAuthenticator()
-        authenticator.registerCallback(this)
+        authService = AuthenticationService(applicationContext)
 
-        Log.d(TAG, "Service connected, authenticator initialized")
-        cleanupExpiredEntries()
+        Log.d(TAG, "Service connected")
+        authService.cleanupExpiredEntries()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -47,12 +35,12 @@ class AppLockService : AccessibilityService(), AuthenticationCallback {
         if (currentForegroundApp != foregroundApp) {
             // True app switch - from one package to another
             if (currentForegroundApp != null) {
-                updateExpirationForAppExit(currentForegroundApp!!)
+                authService.updateExpirationForAppExit(currentForegroundApp!!)
             }
 
             // Only perform cleanup when truly switching apps
-            if (authenticatedApps.size > 10) {
-                cleanupExpiredEntries()
+            if (foregroundApp != myPackageName) {
+                authService.cleanupExpiredEntries()
             }
 
             currentForegroundApp = foregroundApp
@@ -60,39 +48,9 @@ class AppLockService : AccessibilityService(), AuthenticationCallback {
             val lockedApps = LockedAppsCache.getLockedApps(this)
 
             val needsAuth = lockedApps.contains(foregroundApp) || foregroundApp == myPackageName
-            if (!needsAuth) return
-
-            // Handle authentication flow
-            if (foregroundApp == myPackageName && foregroundApp == pendingAuthentication) {
-                pendingAuthentication = null
-                return
-            }
-
-            // Fast path: check if authenticated and return quickly if so
-            val authTime = authenticatedApps[foregroundApp]
-            if (authTime != null && System.currentTimeMillis() <= authTime) return
-
-            // Slow path: needs authentication
-            pendingAuthentication = foregroundApp
-            authenticator.authenticate(this, foregroundApp)
-        }
-    }
-
-    private fun cleanupExpiredEntries() {
-        val currentTime = System.currentTimeMillis()
-        val iterator = authenticatedApps.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (entry.value != Long.MAX_VALUE && entry.value < currentTime) {
-                iterator.remove()
-            }
-        }
-    }
-
-    private fun updateExpirationForAppExit(packageName: String) {
-        authenticatedApps[packageName]?.let {
-            if (it == Long.MAX_VALUE) {
-                authenticatedApps[packageName] = System.currentTimeMillis() + IDLE_TIMEOUT_MS
+            if (needsAuth) {
+                // Request authentication if needed
+                authService.requestAuthenticationIfNeeded(foregroundApp)
             }
         }
     }
@@ -100,19 +58,8 @@ class AppLockService : AccessibilityService(), AuthenticationCallback {
     override fun onInterrupt() {}
 
     override fun onDestroy() {
-        currentForegroundApp?.let { updateExpirationForAppExit(it) }
-        if (::authenticator.isInitialized) {
-            authenticator.unregisterCallback(this)
-        }
+        currentForegroundApp?.let { authService.updateExpirationForAppExit(it) }
+        authService.shutdown()
         super.onDestroy()
-    }
-
-    override fun onAuthenticationSucceeded(packageName: String) {
-        authenticatedApps[packageName] = Long.MAX_VALUE
-        pendingAuthentication = null
-    }
-
-    override fun onAuthenticationFailed(packageName: String) {
-        authenticatedApps.remove(packageName)
     }
 }
