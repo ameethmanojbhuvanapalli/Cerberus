@@ -24,40 +24,68 @@ class AppLockService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Early return if not window state changed event
-        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            Log.d(TAG, "Event type is not TYPE_WINDOW_STATE_CHANGED, ignoring.")
+            return
+        }
 
-        val foregroundApp = event.packageName?.toString() ?: return
+        Log.d(TAG, "Received event: type=${event.eventType}, package=${event.packageName}")
+
+        val foregroundApp = event.packageName?.toString() ?: run {
+            Log.d(TAG, "Foreground app packageName is null.")
+            return
+        }
+
+        Log.d(TAG, "Foreground app: $foregroundApp, Previous foreground app: $currentForegroundApp")
 
         // Skip authentication check if the BiometricPromptActivity is showing
-        if (foregroundApp == myPackageName && foregroundApp.contains(promptActivityName)) return
+        if (foregroundApp == myPackageName && foregroundApp.contains(promptActivityName)) {
+            Log.d(TAG, "Skipping authentication because BiometricPromptActivity is showing.")
+            return
+        }
 
         if (currentForegroundApp != foregroundApp) {
+            Log.d(TAG, "Detected app switch from $currentForegroundApp to $foregroundApp")
+
             // True app switch - from one package to another
             if (currentForegroundApp != null) {
+                Log.d(TAG, "Calling updateExpirationForAppExit for $currentForegroundApp")
                 authService.updateExpirationForAppExit(currentForegroundApp!!)
             }
 
             // Only perform cleanup when truly switching apps
             if (foregroundApp != myPackageName) {
+                Log.d(TAG, "Calling cleanupExpiredEntries (not our app in foreground)")
                 authService.cleanupExpiredEntries()
             }
 
             currentForegroundApp = foregroundApp
 
             val lockedApps = LockedAppsCache.getLockedApps(this)
+            Log.d(TAG, "Locked apps: $lockedApps")
 
             val needsAuth = lockedApps.contains(foregroundApp) || foregroundApp == myPackageName
+            Log.d(TAG, "Needs authentication for $foregroundApp: $needsAuth")
+
             if (needsAuth) {
-                // Request authentication if needed
+                Log.d(TAG, "Requesting authentication for $foregroundApp")
                 authService.requestAuthenticationIfNeeded(foregroundApp)
             }
+        } else {
+            Log.d(TAG, "No app switch detected. currentForegroundApp = $currentForegroundApp")
         }
     }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        Log.d(TAG, "Service interrupted")
+    }
 
     override fun onDestroy() {
-        currentForegroundApp?.let { authService.updateExpirationForAppExit(it) }
+        Log.d(TAG, "Service destroyed, cleaning up.")
+        currentForegroundApp?.let {
+            Log.d(TAG, "Calling updateExpirationForAppExit for $it (onDestroy)")
+            authService.updateExpirationForAppExit(it)
+        }
         authService.shutdown()
         super.onDestroy()
     }

@@ -18,7 +18,6 @@ class AuthenticationService(context: Context) {
     private val appContext = context.applicationContext
     private val authManager = AuthenticationManager.getInstance(appContext)
     private val authenticator: Authenticator
-    private val pendingAuthentications = ConcurrentHashMap<String, Boolean>()
     private val authenticatedApps = ConcurrentHashMap<String, Long>()
     private val callbacks = mutableListOf<AuthenticationCallback>()
     private val TAG = "AuthenticationService"
@@ -49,21 +48,13 @@ class AuthenticationService(context: Context) {
     }
 
     fun requestAuthenticationIfNeeded(packageName: String): Boolean {
-        // Already authenticated?
         val authTime = authenticatedApps[packageName]
-        if (authTime != null && System.currentTimeMillis() <= authTime) {
+        val now = System.currentTimeMillis()
+        if (authTime != null && now <= authTime) {
+            Log.d(TAG, "Skipping authentication for $packageName: already authenticated until $authTime, now=$now")
             return false
         }
 
-        // Already authenticating?
-        synchronized(pendingAuthentications) {
-            if (pendingAuthentications.containsKey(packageName)) {
-                return false
-            }
-            pendingAuthentications[packageName] = true
-        }
-
-        // Start authentication
         Log.d(TAG, "Requesting authentication for $packageName")
         authenticator.authenticate(appContext, packageName)
         return true
@@ -107,9 +98,6 @@ class AuthenticationService(context: Context) {
     private fun handleAuthenticationSuccess(packageName: String) {
         Log.d(TAG, "Authentication succeeded for $packageName")
         authenticatedApps[packageName] = Long.MAX_VALUE
-        synchronized(pendingAuthentications) {
-            pendingAuthentications.remove(packageName)
-        }
 
         // Notify callbacks
         synchronized(callbacks) {
@@ -120,9 +108,6 @@ class AuthenticationService(context: Context) {
     private fun handleAuthenticationFailure(packageName: String) {
         Log.d(TAG, "Authentication failed for $packageName")
         authenticatedApps.remove(packageName)
-        synchronized(pendingAuthentications) {
-            pendingAuthentications.remove(packageName)
-        }
 
         // Notify callbacks
         synchronized(callbacks) {
