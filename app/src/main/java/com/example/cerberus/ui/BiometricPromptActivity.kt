@@ -2,6 +2,8 @@ package com.example.cerberus.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import androidx.biometric.BiometricManager
@@ -13,6 +15,8 @@ import androidx.activity.OnBackPressedCallback
 class BiometricPromptActivity : FragmentActivity() {
     private val TAG = "BiometricPromptActivity"
     private var packageNameToAuth: String? = null
+    private var promptShowing = false
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -26,8 +30,8 @@ class BiometricPromptActivity : FragmentActivity() {
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    Log.d(TAG, "Back button pressed - ignoring")
-                    // Do nothing to block back press
+                    Log.d(TAG, "Back button pressed - re-triggering prompt")
+                    retriggerPrompt()
                 }
             }
         )
@@ -46,17 +50,17 @@ class BiometricPromptActivity : FragmentActivity() {
         sendBroadcast(intent)
     }
 
-    private fun goToHomeAndFinish() {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_HOME)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
+    private fun retriggerPrompt() {
+        // Prevent multiple triggers
+        if (!promptShowing) {
+            handler.post { showBiometricPrompt() }
+        }
     }
 
     private fun showBiometricPrompt() {
-        if (isFinishing) return
+        if (isFinishing || promptShowing) return
 
+        promptShowing = true
         Log.d(TAG, "Showing biometric prompt")
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
@@ -69,26 +73,15 @@ class BiometricPromptActivity : FragmentActivity() {
                 }
 
                 override fun onAuthenticationFailed() {
-                    Log.d(TAG, "Authentication failed, sending broadcast and retrying")
-                    val intent = Intent("com.example.cerberus.AUTH_FAILURE")
-                    sendBroadcast(intent)
-                    showBiometricPrompt() // Try again
+                    Log.d(TAG, "Authentication failed, re-triggering prompt")
+                    promptShowing = false
+                    retriggerPrompt()
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     Log.d(TAG, "Authentication error: $errorCode - $errString")
-                    when (errorCode) {
-                        BiometricPrompt.ERROR_USER_CANCELED,
-                        BiometricPrompt.ERROR_CANCELED -> {
-                            Log.d(TAG, "User canceled authentication, returning to home")
-                            goToHomeAndFinish()
-                        }
-                        else -> {
-                            val intent = Intent("com.example.cerberus.AUTH_FAILURE")
-                            sendBroadcast(intent)
-                            goToHomeAndFinish()
-                        }
-                    }
+                    promptShowing = false
+                    retriggerPrompt()
                 }
             }
         )
@@ -106,9 +99,8 @@ class BiometricPromptActivity : FragmentActivity() {
             Log.d(TAG, "Biometric prompt shown successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error showing biometric prompt", e)
-            val intent = Intent("com.example.cerberus.AUTH_FAILURE")
-            sendBroadcast(intent)
-            finish()
+            promptShowing = false
+            retriggerPrompt()
         }
     }
 }
