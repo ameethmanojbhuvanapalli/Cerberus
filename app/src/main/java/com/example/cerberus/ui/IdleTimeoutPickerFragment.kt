@@ -35,6 +35,11 @@ class IdleTimeoutPickerFragment(
             .create()
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.SecureBlockerTheme)
+    }
+
     override fun onStart() {
         super.onStart()
         val dialog = dialog as? AlertDialog ?: return
