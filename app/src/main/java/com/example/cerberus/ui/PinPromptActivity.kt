@@ -20,7 +20,7 @@ class PinPromptActivity : AppCompatActivity() {
 
         binding.confirmButton.setOnClickListener {
             val pin = binding.pinInput.text.toString()
-            val hash = HashUtils.hashPin(pin)
+            val hash = HashUtils.hash(pin)
             if (PinCache.getPinHash(this) == hash) {
                 sendBroadcast(Intent("com.example.cerberus.AUTH_SUCCESS"))
                 finish()

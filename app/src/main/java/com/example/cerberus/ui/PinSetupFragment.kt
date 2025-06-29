@@ -30,7 +30,7 @@ class PinSetupFragment : DialogFragment() {
                 Toast.makeText(context, "PINs do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val hash = HashUtils.hashPin(pin)
+            val hash = HashUtils.hash(pin)
             PinCache.setPin(requireContext(), hash)
             onPinSet?.invoke()
             dismiss()
