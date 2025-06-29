@@ -56,6 +56,7 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
         val now = System.currentTimeMillis()
         if (authTime != null && now <= authTime) {
             Log.d(TAG, "requestAuthenticationIfNeeded: Skipping $packageName, already authenticated")
+            authenticatedApps[packageName] = Long.MAX_VALUE
             return false
         }
 
