@@ -12,7 +12,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/duration_picker"
+        app:layout_constraintBottom_toTopOf="@id/save_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -58,39 +58,20 @@
                 app:icon="@drawable/ic_pin"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/set_idle_timeout_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Set Idle Timeout"
+                android:backgroundTint="@color/gray"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:icon="@drawable/ic_timer"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"/>
         </LinearLayout>
     </ScrollView>
-
-    <LinearLayout
-        android:id="@+id/duration_picker"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/save_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <NumberPicker
-            android:id="@+id/np_hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
-
-        <NumberPicker
-            android:id="@+id/np_minutes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
-
-        <NumberPicker
-            android:id="@+id/np_seconds"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/save_button"

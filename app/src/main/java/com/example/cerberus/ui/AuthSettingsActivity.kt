@@ -1,7 +1,6 @@
 package com.example.cerberus.ui
 
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
@@ -79,11 +78,18 @@ class AuthSettingsActivity : AppCompatActivity() {
             }
         }
 
-        setupDurationPickers()
+        binding.setIdleTimeoutButton.setOnClickListener {
+            val currentTimeout = IdleTimeoutCache.getIdleTimeout(this)
+            val dialog = IdleTimeoutPickerFragment(currentTimeout) { newTimeoutMs ->
+                IdleTimeoutCache.setIdleTimeout(this, newTimeoutMs)
+                AuthenticationService.getInstance(this).clearAuthenticatedApps()
+                Toast.makeText(this, "Idle Timeout set to ${newTimeoutMs / 1000} seconds", Toast.LENGTH_SHORT).show()
+            }
+            dialog.show(supportFragmentManager, "idle_timeout_picker")
+        }
 
         binding.saveButton.setOnClickListener {
-            val durationMs = getSelectedDurationMs()
-            IdleTimeoutCache.setIdleTimeout(this,durationMs)
+            val durationMs = IdleTimeoutCache.getIdleTimeout(this)
             AuthenticationService.getInstance(this).clearAuthenticatedApps()
             Toast.makeText(this, "Duration: $durationMs ms saved", Toast.LENGTH_SHORT).show()
 
@@ -99,41 +105,20 @@ class AuthSettingsActivity : AppCompatActivity() {
         updateSaveButtonState()
     }
 
-    private fun setupDurationPickers() {
-        binding.npHours.minValue = 0
-        binding.npHours.maxValue = 23
-        binding.npHours.wrapSelectorWheel = true
-
-        binding.npMinutes.minValue = 0
-        binding.npMinutes.maxValue = 59
-        binding.npMinutes.wrapSelectorWheel = true
-
-        binding.npSeconds.minValue = 0
-        binding.npSeconds.maxValue = 59
-        binding.npSeconds.wrapSelectorWheel = true
-    }
-
-    private fun getSelectedDurationMs(): Long {
-        val hours = binding.npHours.value
-        val minutes = binding.npMinutes.value
-        val seconds = binding.npSeconds.value
-        return (hours * 3600 + minutes * 60 + seconds) * 1000L
-    }
-
     private fun updateCredentialButton() {
         when (selectedType?.type) {
             AuthenticatorType.PIN -> {
-                binding.setCredentialButton.visibility = View.VISIBLE
+                binding.setCredentialButton.visibility = android.view.View.VISIBLE
                 binding.setCredentialButton.setText(R.string.set_pin)
                 binding.setCredentialButton.setIconResource(R.drawable.ic_pin)
             }
             AuthenticatorType.PATTERN -> {
-                binding.setCredentialButton.visibility = View.VISIBLE
+                binding.setCredentialButton.visibility = android.view.View.VISIBLE
                 binding.setCredentialButton.setText(R.string.set_pattern)
                 binding.setCredentialButton.setIconResource(R.drawable.ic_pattern)
             }
             else -> {
-                binding.setCredentialButton.visibility = View.GONE
+                binding.setCredentialButton.visibility = android.view.View.GONE
             }
         }
     }
