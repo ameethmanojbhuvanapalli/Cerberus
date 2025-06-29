@@ -39,4 +39,11 @@
     <string name="set_password">Set Password</string>
     <string name="confirm_password">Confirm password</string>
     <string name="enter_password">Enter password</string>
+
+    <string name="protection_status">Protection Status</string>
+    <string name="protection_on">Protection is ON</string>
+    <string name="protection_off">Protection is OFF</string>
+    <string name="protection_on_desc">Your device is currently protected.</string>
+    <string name="protection_off_desc">Protection is currently disabled.</string>
+
 </resources>

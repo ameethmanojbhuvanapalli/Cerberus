@@ -10,6 +10,11 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <com.example.cerberus.ui.ProtectionToggleCard
+            android:id="@+id/protectionCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
         <com.example.cerberus.ui.HomeFeatureCardView
             android:id="@+id/appLockCard"
             android:layout_width="match_parent"

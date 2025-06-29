@@ -24,6 +24,12 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.preloadAppInfo(this)
 
+        binding.protectionCard.updateProtectionState()
+        binding.protectionCard.setOnClickListener {
+            binding.protectionCard.toggleProtectionState()
+        }
+
+
         binding.appLockCard.apply {
             setTitle(getString(R.string.app_lock))
             setDescription(getString(R.string.secure_your_apps))
