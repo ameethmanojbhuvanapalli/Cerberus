@@ -6,7 +6,9 @@
     android:background="@drawable/bg_gradient_black"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center">
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:layout_width="56dp"
