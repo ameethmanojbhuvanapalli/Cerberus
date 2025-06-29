@@ -42,7 +42,6 @@
             android:exported="false"
             android:launchMode="singleInstance"
             android:taskAffinity=""
-            android:theme="@style/SecureBlockerTheme"
             android:excludeFromRecents="true" />
 
         <service

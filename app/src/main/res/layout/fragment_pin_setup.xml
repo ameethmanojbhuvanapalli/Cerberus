@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface_black">
@@ -21,41 +22,39 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="Set PIN"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
 
         <EditText
             android:id="@+id/pin_input"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"
-            android:autofillHints=""
-            android:backgroundTint="@android:color/darker_gray"
             android:hint="Enter PIN"
             android:inputType="numberPassword"
-            android:maxLength="8"
-            android:minHeight="48dp"
-            android:textColor="@android:color/white" />
+            android:maxLength="4"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/darker_gray"/>
 
         <EditText
             android:id="@+id/pin_confirm_input"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="24dp"
-            android:autofillHints=""
-            android:backgroundTint="@android:color/darker_gray"
             android:hint="Confirm PIN"
             android:inputType="numberPassword"
-            android:maxLength="8"
-            android:minHeight="48dp"
-            android:textColor="@android:color/white" />
+            android:maxLength="4"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/darker_gray"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/confirm_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="true"
-            android:text="Set PIN" />
+            android:text="Set PIN"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_gradient_red"
+            app:iconGravity="textStart"/>
     </LinearLayout>
 </FrameLayout>

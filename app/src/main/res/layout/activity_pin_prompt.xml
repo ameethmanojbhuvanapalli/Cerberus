@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/pin_prompt_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="32dp">
+    android:padding="32dp"
+    android:background="@drawable/bg_gradient_black">
 
     <TextView
         android:id="@+id/pin_prompt_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter PIN"
-        android:textAppearance="?attr/textAppearanceHeadline6"
-        android:layout_marginBottom="16dp"
-        android:textStyle="bold"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp"/>
 
     <EditText
         android:id="@+id/pin_input"
@@ -25,12 +28,16 @@
         android:hint="Enter your PIN"
         android:inputType="numberPassword"
         android:maxLength="8"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/darker_gray"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/confirm_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Unlock"
-        android:enabled="true"/>
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_gradient_red"
+        app:iconGravity="textStart"/>
 </LinearLayout>

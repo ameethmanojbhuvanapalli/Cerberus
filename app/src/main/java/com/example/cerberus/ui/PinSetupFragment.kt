@@ -23,8 +23,8 @@ class PinSetupFragment : DialogFragment() {
         binding.confirmButton.setOnClickListener {
             val pin = binding.pinInput.text.toString()
             val pinConfirm = binding.pinConfirmInput.text.toString()
-            if (pin.length < 4) {
-                Toast.makeText(context, "PIN must be at least 4 digits", Toast.LENGTH_SHORT).show()
+            if (pin.length != 4) {
+                Toast.makeText(context, "PIN must be exactly 4 digits", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (pin != pinConfirm) {
