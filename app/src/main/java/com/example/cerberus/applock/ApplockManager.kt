@@ -16,8 +16,8 @@ object ApplockManager {
     }
 
     fun stop(context: Context) {
-        // No real way to stop AccessibilityService programmatically
-        // Just disable protection so AppLockService becomes passive
+        val intent = Intent("com.example.cerberus.STOP_APPLOCK")
+        context.sendBroadcast(intent)
     }
 
     private fun isServiceEnabled(context: Context): Boolean {
