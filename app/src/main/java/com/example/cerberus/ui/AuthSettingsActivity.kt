@@ -8,17 +8,16 @@ import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
+import com.example.cerberus.data.PatternCache
 import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
-import com.example.cerberus.service.AuthenticationService
 
 class AuthSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthSettingsBinding
     private lateinit var adapter: AuthTypeSelectAdapter
     private lateinit var authTypes: List<AuthenticatorTypeItem>
     private var selectedType: AuthenticatorTypeItem? = null
-    private var isCredentialSet: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +48,6 @@ class AuthSettingsActivity : AppCompatActivity() {
 
         adapter = AuthTypeSelectAdapter(this, authTypes, selectedType!!) { selected ->
             selectedType = selected
-            isCredentialSet = false
             updateCredentialButton()
             updateSaveButtonState()
         }
@@ -61,7 +59,6 @@ class AuthSettingsActivity : AppCompatActivity() {
                 AuthenticatorType.PIN -> {
                     val fragment = PinSetupFragment().apply {
                         onPinSet = {
-                            isCredentialSet = true
                             updateSaveButtonState()
                             Toast.makeText(context, "PIN set", Toast.LENGTH_SHORT).show()
                         }
@@ -69,9 +66,15 @@ class AuthSettingsActivity : AppCompatActivity() {
                     fragment.show(supportFragmentManager, "pin_setup")
                 }
                 AuthenticatorType.PATTERN -> {
-                    isCredentialSet = true
-                    Toast.makeText(this, "Set Pattern action", Toast.LENGTH_SHORT).show()
+                    val frag = PatternSetupFragment().apply {
+                        onPatternSet = {
+                            updateSaveButtonState()
+                            Toast.makeText(this@AuthSettingsActivity, "Pattern set", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    frag.show(supportFragmentManager, "pattern_setup")
                 }
+
                 else -> {}
             }
         }
@@ -110,7 +113,7 @@ class AuthSettingsActivity : AppCompatActivity() {
     private fun updateSaveButtonState() {
         binding.saveButton.isEnabled = when (selectedType?.type) {
             AuthenticatorType.PIN -> PinCache.hasPin(this)
-            AuthenticatorType.PATTERN -> isCredentialSet
+            AuthenticatorType.PATTERN -> PatternCache.hasPattern(this)
             AuthenticatorType.BIOMETRIC -> true
             else -> false
         }

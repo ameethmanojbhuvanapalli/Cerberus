@@ -44,6 +44,7 @@ dependencies {
 
     implementation(libs.androidx.biometric)
     implementation(libs.material)
+    implementation("io.github.itsxtt:pattern-lock:0.2.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -44,6 +44,13 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
+        <activity
+            android:name=".ui.PatternPromptActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <service
             android:name=".service.AppLockService"
             android:exported="true"

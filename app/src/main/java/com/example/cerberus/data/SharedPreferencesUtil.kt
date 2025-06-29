@@ -10,6 +10,7 @@ object SharedPreferencesUtil {
     private const val LOCKED_APPS_KEY = "locked_apps"
     private const val AUTH_TYPE_KEY = "auth_type"
     private const val PIN_HASH_KEY = "pin_hash"
+    private const val PATTERN_HASH_KEY = "pattern_hash"
 
     fun getLockedApps(context: Context): Set<String> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -56,4 +57,24 @@ object SharedPreferencesUtil {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.contains(PIN_HASH_KEY)
     }
+
+    fun setPatternHash(context: Context, hash: String) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { putString(PATTERN_HASH_KEY, hash) }
+    }
+
+    fun getPatternHash(context: Context): String? {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(PATTERN_HASH_KEY, null)
+    }
+
+    fun hasPattern(context: Context): Boolean {
+        return getPatternHash(context) != null
+    }
+
+    fun clearPattern(context: Context) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { remove(PATTERN_HASH_KEY) }
+    }
 }
+

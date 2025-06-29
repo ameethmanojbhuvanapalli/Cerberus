@@ -1,6 +1,5 @@
 package com.example.cerberus.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
