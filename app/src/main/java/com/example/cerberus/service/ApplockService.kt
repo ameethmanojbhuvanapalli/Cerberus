@@ -31,6 +31,7 @@ class AppLockService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (!isProtectionEnabled()) return
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         val foregroundPackage = event.packageName?.toString() ?: return
@@ -80,6 +81,11 @@ class AppLockService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+
+    private fun isProtectionEnabled(): Boolean {
+        return getSharedPreferences("settings", MODE_PRIVATE)
+            .getBoolean("protection_enabled", false)
+    }
 
     override fun onDestroy() {
         lastPackageName?.let { authService.updateExpirationForAppExit(it) }

@@ -69,6 +69,19 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config"/>
         </service>
+
+        <service
+            android:name=".service.AppLockTileService"
+            android:label="App Lock"
+            android:exported="true"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".service.AppLockServiceControlReceiver" />
+
     </application>
 
     <queries>
