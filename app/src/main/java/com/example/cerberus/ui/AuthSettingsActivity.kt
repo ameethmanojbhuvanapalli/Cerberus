@@ -1,36 +1,49 @@
 package com.example.cerberus.ui
 
 import android.os.Bundle
+import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticatorType
+import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.data.AuthenticatorTypeCache
-import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 
 class AuthSettingsActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityAuthSettingsBinding
+
+    private lateinit var listView: ListView
+    private lateinit var adapter: AuthTypeSelectAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAuthSettingsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_auth_settings)
 
-        // Set currently selected type
+        listView = findViewById(R.id.auth_type_list_view)
+
+        val items = listOf(
+            AuthenticatorTypeItem(
+                AuthenticatorType.BIOMETRIC,
+                R.drawable.ic_fingerprint,
+                getString(R.string.biometric)
+            ),
+            AuthenticatorTypeItem(
+                AuthenticatorType.PIN,
+                R.drawable.ic_pin,
+                getString(R.string.pin)
+            ),
+            AuthenticatorTypeItem(
+                AuthenticatorType.PATTERN,
+                R.drawable.ic_pattern,
+                getString(R.string.pattern)
+            ),
+        )
+
         val currentType = AuthenticatorTypeCache.getAuthenticatorType(this)
-        when (currentType) {
-            AuthenticatorType.BIOMETRIC -> binding.radioBiometric.isChecked = true
-            AuthenticatorType.PIN -> binding.radioPin.isChecked = true
-            AuthenticatorType.PATTERN -> binding.radioPattern.isChecked = true
+        val selectedItem = items.first { it.type == currentType }
+
+        adapter = AuthTypeSelectAdapter(this, items, selectedItem) { selected ->
+            AuthenticatorTypeCache.setAuthenticatorType(this, selected.type)
         }
 
-        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val type = when (checkedId) {
-                R.id.radioBiometric -> AuthenticatorType.BIOMETRIC
-                R.id.radioPin -> AuthenticatorType.PIN
-                R.id.radioPattern -> AuthenticatorType.PATTERN
-                else -> AuthenticatorType.BIOMETRIC
-            }
-            AuthenticatorTypeCache.setAuthenticatorType(this, type)
-        }
+        listView.adapter = adapter
     }
 }

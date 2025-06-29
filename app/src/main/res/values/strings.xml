@@ -20,5 +20,6 @@
     <string name="biometric">Biometric</string>
     <string name="pin">PIN</string>
     <string name="pattern">Pattern</string>
+    <string name="selected_text">Selected</string>
     <string name="select_auth_type">Select your preferred authentication type</string>
 </resources>
