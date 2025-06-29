@@ -52,7 +52,7 @@ class AppLockTileService : TileService() {
             val callback = object : AuthenticationCallback {
                 override fun onAuthenticationSucceeded(packageName: String) {
                     setProtectionEnabled(false)
-                    sendBroadcast(Intent("com.example.cerberus.STOP_LOCK_SERVICE"))
+                    sendBroadcast(Intent("com.example.cerberus.STOP_APPLOCK"))
                     Toast.makeText(applicationContext, "Protection Disabled", Toast.LENGTH_SHORT).show()
                     updateTileState()
                     sendProtectionStateChangedBroadcast()
@@ -105,7 +105,6 @@ class AppLockTileService : TileService() {
         startActivityAndCollapse(pendingIntent)
     }
 
-    @Suppress("DEPRECATION")
     private fun launchSettingsWithIntent(intent: Intent) {
         startActivity(intent)
     }
