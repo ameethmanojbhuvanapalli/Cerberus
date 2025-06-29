@@ -1,6 +1,9 @@
 package com.example.cerberus
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +19,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
 
+    private val protectionStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            binding.protectionCard.updateProtectionState()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -28,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         binding.protectionCard.setOnClickListener {
             binding.protectionCard.toggleProtectionState()
         }
-
 
         binding.appLockCard.apply {
             setTitle(getString(R.string.app_lock))
@@ -59,7 +67,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        registerReceiver(protectionStateReceiver, IntentFilter("com.example.cerberus.PROTECTION_STATE_CHANGED"),Context.RECEIVER_NOT_EXPORTED)
         checkPermissionsAndUpdateUI()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(protectionStateReceiver)
     }
 
     private fun checkPermissionsAndUpdateUI() {
@@ -82,7 +96,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPermissionFragment() {
-        // Avoid multiple fragments
         if (supportFragmentManager.findFragmentByTag("perm_fragment") == null) {
             val fragment = PermissionHelperFragment {
                 viewModel.updateLockedAppsCount(this)

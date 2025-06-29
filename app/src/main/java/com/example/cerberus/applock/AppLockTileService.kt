@@ -28,6 +28,7 @@ class AppLockTileService : TileService() {
         if (!enabled) {
             setProtectionEnabled(true)
             updateTileState()
+            sendProtectionStateChangedBroadcast()
 
             if (PermissionsUtil.hasAccessibilityPermission(this)) {
                 sendBroadcast(Intent("com.example.cerberus.START_LOCK_SERVICE"))
@@ -54,6 +55,7 @@ class AppLockTileService : TileService() {
                     sendBroadcast(Intent("com.example.cerberus.STOP_LOCK_SERVICE"))
                     Toast.makeText(applicationContext, "Protection Disabled", Toast.LENGTH_SHORT).show()
                     updateTileState()
+                    sendProtectionStateChangedBroadcast()
                     authService?.unregisterCallback(this)
                 }
 
@@ -73,7 +75,6 @@ class AppLockTileService : TileService() {
         }
     }
 
-
     private fun updateTileState() {
         qsTile?.apply {
             state = if (isProtectionEnabled()) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
@@ -89,6 +90,10 @@ class AppLockTileService : TileService() {
 
     private fun setProtectionEnabled(enabled: Boolean) {
         ProtectionCache.setProtectionEnabled(this, enabled)
+    }
+
+    private fun sendProtectionStateChangedBroadcast() {
+        sendBroadcast(Intent("com.example.cerberus.PROTECTION_STATE_CHANGED"))
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
