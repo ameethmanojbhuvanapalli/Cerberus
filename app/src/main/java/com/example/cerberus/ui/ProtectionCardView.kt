@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import com.example.cerberus.R
 import com.example.cerberus.data.ProtectionCache
 import com.example.cerberus.databinding.ProtectionToggleCardBinding
@@ -24,7 +25,7 @@ class ProtectionCardView @JvmOverloads constructor(
     fun updateProtectionState() {
         val isEnabled = ProtectionCache.isProtectionEnabled(context)
         val newDrawableRes = if (isEnabled) R.drawable.cerberus_1 else R.drawable.cerberus_2
-
+        val newTextColor = if (isEnabled) R.color.red_dark else R.color.gray
         val fadeDuration = 300L
 
         binding.imgProtectionStatus.animate()
@@ -44,7 +45,10 @@ class ProtectionCardView @JvmOverloads constructor(
         } else {
             context.getString(R.string.protection_off)
         }
+
+        binding.txtProtectionStatus.setTextColor(ContextCompat.getColor(context, newTextColor))
     }
+
 
 
     fun toggleProtectionState() {
