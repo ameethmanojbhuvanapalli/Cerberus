@@ -18,7 +18,7 @@ Cerberus is designed with the following software patterns:
 - **Observer Pattern:** Uses callbacks to notify registered listeners about authentication events.
 - **Event-Driven Architecture:** Decouples authentication logic from UI and other components, making the system modular and maintainable.
 
-  ## Requirements
+## Requirements
   
 - **Android Studio**: Meerkat Feature Drop | 2024.3.2 Patch 1 or later
 - **JDK**: 17 or later
