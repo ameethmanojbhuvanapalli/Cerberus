@@ -5,6 +5,7 @@ import com.example.cerberus.data.AuthenticatorTypeCache
 
 class AuthenticationManager(private val context: Context) {
     private var currentAuthenticator: Authenticator? = null
+    private val listeners = mutableListOf<AuthenticatorChangeListener>()
 
     companion object {
         private var instance: AuthenticationManager? = null
@@ -29,5 +30,16 @@ class AuthenticationManager(private val context: Context) {
     fun setAuthenticatorType(type: AuthenticatorType) {
         AuthenticatorTypeCache.setAuthenticatorType(context, type)
         currentAuthenticator = AuthenticatorFactory.getAuthenticator(type)
+        notifyListeners()
+    }
+
+    fun registerListener(listener: AuthenticatorChangeListener) {
+        if (!listeners.contains(listener)) listeners.add(listener)
+    }
+
+    private fun notifyListeners() {
+        currentAuthenticator?.let { auth ->
+            listeners.forEach { it.onAuthenticatorChanged(auth) }
+        }
     }
 }

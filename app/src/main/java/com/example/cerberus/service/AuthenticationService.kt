@@ -5,57 +5,60 @@ import android.util.Log
 import com.example.cerberus.auth.AuthenticationCallback
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.Authenticator
+import com.example.cerberus.auth.AuthenticatorChangeListener
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Service to handle authentication operations.
- *
- * IMPORTANT: This class should be instantiated with application context
- * to prevent memory leaks.
- */
-class AuthenticationService(context: Context) {
-    // Always use application context to prevent leaks
+class AuthenticationService(context: Context) : AuthenticatorChangeListener {
     private val appContext = context.applicationContext
     private val authManager = AuthenticationManager.getInstance(appContext)
-    private val authenticator: Authenticator
+    private var authenticator: Authenticator = authManager.getCurrentAuthenticator()
     private val authenticatedApps = ConcurrentHashMap<String, Long>()
     private val callbacks = mutableListOf<AuthenticationCallback>()
     private val TAG = "AuthenticationService"
 
-    // Store a reference to our internal callback
     private val internalCallback: AuthenticationCallback
 
     private val IDLE_TIMEOUT_MS = 15 * 1000L
 
     init {
-        authenticator = authManager.getCurrentAuthenticator()
-
-        // Create and store the callback
+        Log.d(TAG, "Initializing AuthenticationService")
+        authManager.registerListener(this)
         internalCallback = object : AuthenticationCallback {
             override fun onAuthenticationSucceeded(packageName: String) {
+                Log.d(TAG, "internalCallback: onAuthenticationSucceeded for $packageName")
                 handleAuthenticationSuccess(packageName)
             }
 
             override fun onAuthenticationFailed(packageName: String) {
+                Log.d(TAG, "internalCallback: onAuthenticationFailed for $packageName")
                 handleAuthenticationFailure(packageName)
             }
         }
 
-        // Register the callback
         authenticator.registerCallback(internalCallback)
+        Log.d(TAG, "Registered internalCallback with ${authenticator::class.java.simpleName}")
+    }
 
-        Log.d(TAG, "Authentication service initialized")
+    companion object {
+        @Volatile
+        private var instance: AuthenticationService? = null
+
+        fun getInstance(context: Context): AuthenticationService {
+            return instance ?: synchronized(this) {
+                instance ?: AuthenticationService(context.applicationContext).also { instance = it }
+            }
+        }
     }
 
     fun requestAuthenticationIfNeeded(packageName: String): Boolean {
         val authTime = authenticatedApps[packageName]
         val now = System.currentTimeMillis()
         if (authTime != null && now <= authTime) {
-            Log.d(TAG, "Skipping authentication for $packageName: already authenticated until $authTime, now=$now")
+            Log.d(TAG, "requestAuthenticationIfNeeded: Skipping $packageName, already authenticated")
             return false
         }
 
-        Log.d(TAG, "Requesting authentication for $packageName")
+        Log.d(TAG, "requestAuthenticationIfNeeded: Triggering authentication for $packageName")
         authenticator.authenticate(appContext, packageName)
         return true
     }
@@ -64,7 +67,7 @@ class AuthenticationService(context: Context) {
         synchronized(callbacks) {
             if (!callbacks.contains(callback)) {
                 callbacks.add(callback)
-                Log.d(TAG, "Callback registered, total callbacks: ${callbacks.size}")
+                Log.d(TAG, "registerCallback: Added new callback, total = ${callbacks.size}")
             }
         }
     }
@@ -72,7 +75,7 @@ class AuthenticationService(context: Context) {
     fun unregisterCallback(callback: AuthenticationCallback) {
         synchronized(callbacks) {
             callbacks.remove(callback)
-            Log.d(TAG, "Callback unregistered, remaining callbacks: ${callbacks.size}")
+            Log.d(TAG, "unregisterCallback: Removed callback, total = ${callbacks.size}")
         }
     }
 
@@ -82,6 +85,7 @@ class AuthenticationService(context: Context) {
         while (iterator.hasNext()) {
             val entry = iterator.next()
             if (entry.value != Long.MAX_VALUE && entry.value < currentTime) {
+                Log.d(TAG, "cleanupExpiredEntries: Removing expired entry for ${entry.key}")
                 iterator.remove()
             }
         }
@@ -90,32 +94,38 @@ class AuthenticationService(context: Context) {
     fun updateExpirationForAppExit(packageName: String) {
         authenticatedApps[packageName]?.let {
             if (it == Long.MAX_VALUE) {
-                authenticatedApps[packageName] = System.currentTimeMillis() + IDLE_TIMEOUT_MS
+                val newExpiration = System.currentTimeMillis() + IDLE_TIMEOUT_MS
+                Log.d(TAG, "updateExpirationForAppExit: Setting idle timeout for $packageName until $newExpiration")
+                authenticatedApps[packageName] = newExpiration
             }
         }
     }
 
     private fun handleAuthenticationSuccess(packageName: String) {
-        Log.d(TAG, "Authentication succeeded for $packageName")
+        Log.d(TAG, "handleAuthenticationSuccess: $packageName")
         authenticatedApps[packageName] = Long.MAX_VALUE
-
-        // Notify callbacks
         synchronized(callbacks) {
             callbacks.forEach { it.onAuthenticationSucceeded(packageName) }
         }
     }
 
     private fun handleAuthenticationFailure(packageName: String) {
-        Log.d(TAG, "Authentication failed for $packageName")
+        Log.d(TAG, "handleAuthenticationFailure: $packageName")
         authenticatedApps.remove(packageName)
-
-        // Notify callbacks
         synchronized(callbacks) {
             callbacks.forEach { it.onAuthenticationFailed(packageName) }
         }
     }
 
+    override fun onAuthenticatorChanged(newAuthenticator: Authenticator) {
+        authenticator.unregisterCallback(internalCallback)
+        authenticator = newAuthenticator
+        authenticator.registerCallback(internalCallback)
+        Log.d(TAG, "onAuthenticatorChanged: Switched to ${newAuthenticator::class.java.simpleName}")
+    }
+
     fun shutdown() {
+        Log.d(TAG, "shutdown: Unregistering internal callback")
         authenticator.unregisterCallback(internalCallback)
     }
 }

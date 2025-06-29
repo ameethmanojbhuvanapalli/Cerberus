@@ -25,7 +25,7 @@ class AppLockService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-        authService = AuthenticationService(applicationContext)
+        authService = AuthenticationService.getInstance(applicationContext)
         Log.d(TAG, "Service connected")
         authService.cleanupExpiredEntries()
     }

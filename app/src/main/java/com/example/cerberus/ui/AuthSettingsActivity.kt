@@ -5,11 +5,13 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
+import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
 import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
+import com.example.cerberus.service.AuthenticationService
 
 class AuthSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthSettingsBinding
@@ -77,6 +79,7 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.saveButton.setOnClickListener {
             selectedType?.let {
                 AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
+                AuthenticationManager.getInstance(this).setAuthenticatorType(it.type)
                 Toast.makeText(this, getString(R.string.saved), Toast.LENGTH_SHORT).show()
                 finish()
             }
