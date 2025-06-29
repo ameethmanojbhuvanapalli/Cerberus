@@ -8,10 +8,12 @@ import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
+import com.example.cerberus.data.IdleTimeoutCache
 import com.example.cerberus.data.PatternCache
-import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
+import com.example.cerberus.model.AuthenticatorTypeItem
+import com.example.cerberus.service.AuthenticationService
 
 class AuthSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthSettingsBinding
@@ -42,7 +44,6 @@ class AuthSettingsActivity : AppCompatActivity() {
             ),
         )
 
-        // Get last selected or default to first
         val cachedType = AuthenticatorTypeCache.getAuthenticatorType(this)
         selectedType = authTypes.find { it.type == cachedType } ?: authTypes.first()
 
@@ -74,12 +75,18 @@ class AuthSettingsActivity : AppCompatActivity() {
                     }
                     frag.show(supportFragmentManager, "pattern_setup")
                 }
-
                 else -> {}
             }
         }
 
+        setupDurationPickers()
+
         binding.saveButton.setOnClickListener {
+            val durationMs = getSelectedDurationMs()
+            IdleTimeoutCache.setIdleTimeout(this,durationMs)
+            AuthenticationService.getInstance(this).clearAuthenticatedApps()
+            Toast.makeText(this, "Duration: $durationMs ms saved", Toast.LENGTH_SHORT).show()
+
             selectedType?.let {
                 AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
                 AuthenticationManager.getInstance(this).setAuthenticatorType(it.type)
@@ -90,6 +97,27 @@ class AuthSettingsActivity : AppCompatActivity() {
 
         updateCredentialButton()
         updateSaveButtonState()
+    }
+
+    private fun setupDurationPickers() {
+        binding.npHours.minValue = 0
+        binding.npHours.maxValue = 23
+        binding.npHours.wrapSelectorWheel = true
+
+        binding.npMinutes.minValue = 0
+        binding.npMinutes.maxValue = 59
+        binding.npMinutes.wrapSelectorWheel = true
+
+        binding.npSeconds.minValue = 0
+        binding.npSeconds.maxValue = 59
+        binding.npSeconds.wrapSelectorWheel = true
+    }
+
+    private fun getSelectedDurationMs(): Long {
+        val hours = binding.npHours.value
+        val minutes = binding.npMinutes.value
+        val seconds = binding.npSeconds.value
+        return (hours * 3600 + minutes * 60 + seconds) * 1000L
     }
 
     private fun updateCredentialButton() {

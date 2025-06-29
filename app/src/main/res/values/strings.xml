@@ -30,4 +30,6 @@
     <string name="enter_your_pin">Enter your PIN</string>
     <string name="unlock">Unlock</string>
     <string name="confirm_pin">Confirm Pin</string>
+
+    <string name="idle_timeout_seconds">Idle Timeout (seconds)</string>
 </resources>

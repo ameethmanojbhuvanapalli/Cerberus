@@ -6,6 +6,7 @@ import com.example.cerberus.auth.AuthenticationCallback
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.Authenticator
 import com.example.cerberus.auth.AuthenticatorChangeListener
+import com.example.cerberus.data.IdleTimeoutCache
 import java.util.concurrent.ConcurrentHashMap
 
 class AuthenticationService(context: Context) : AuthenticatorChangeListener {
@@ -18,7 +19,7 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
 
     private val internalCallback: AuthenticationCallback
 
-    private val IDLE_TIMEOUT_MS = 15 * 1000L
+    private val IDLE_TIMEOUT_MS get() = IdleTimeoutCache.getIdleTimeout(appContext)
 
     init {
         Log.d(TAG, "Initializing AuthenticationService")
@@ -89,6 +90,11 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
                 iterator.remove()
             }
         }
+    }
+
+    fun clearAuthenticatedApps() {
+        authenticatedApps.clear()
+        Log.d(TAG, "clearAuthenticatedApps: Cleared all authenticated app entries")
     }
 
     fun updateExpirationForAppExit(packageName: String) {

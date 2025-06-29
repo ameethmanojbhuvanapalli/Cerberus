@@ -11,6 +11,8 @@ object SharedPreferencesUtil {
     private const val AUTH_TYPE_KEY = "auth_type"
     private const val PIN_HASH_KEY = "pin_hash"
     private const val PATTERN_HASH_KEY = "pattern_hash"
+    private const val IDLE_TIMEOUT_KEY = "idle_timeout_ms"
+    private const val DEFAULT_IDLE_TIMEOUT = 15000L
 
     fun getLockedApps(context: Context): Set<String> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -75,6 +77,16 @@ object SharedPreferencesUtil {
     fun clearPattern(context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit { remove(PATTERN_HASH_KEY) }
+    }
+
+    fun getIdleTimeout(context: Context): Long {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getLong(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT)
+    }
+
+    fun setIdleTimeout(context: Context, timeoutMs: Long) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putLong(IDLE_TIMEOUT_KEY, timeoutMs) }
     }
 }
 
