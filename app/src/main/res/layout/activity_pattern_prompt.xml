@@ -4,7 +4,7 @@
     android:background="@drawable/bg_gradient_black">
 
     <TextView
-        android:text="Draw Pattern" android:textSize="20sp" android:textStyle="bold"
+        android:text="@string/draw_pattern" android:textSize="20sp" android:textStyle="bold"
         android:textColor="@android:color/white" android:layout_marginBottom="16dp"
         android:layout_width="wrap_content" android:layout_height="wrap_content" />
 

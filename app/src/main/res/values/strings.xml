@@ -25,4 +25,9 @@
     <string name="set_pattern">Set Pattern</string>
     <string name="set_pin">Set Pin</string>
     <string name="saved">Changes saved!</string>
+    <string name="draw_pattern">Draw Pattern</string>
+    <string name="enter_pin">Enter PIN</string>
+    <string name="enter_your_pin">Enter your PIN</string>
+    <string name="unlock">Unlock</string>
+    <string name="confirm_pin">Confirm Pin</string>
 </resources>
