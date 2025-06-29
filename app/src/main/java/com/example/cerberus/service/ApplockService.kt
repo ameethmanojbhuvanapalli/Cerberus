@@ -20,7 +20,7 @@ class AppLockService : AccessibilityService() {
     private var stablePromptRunnable: Runnable? = null
     private var stableSince: Long = 0L
     private var activityChangeCount: Int = 0
-    private val STABLE_DELAY = 300L
+    private val STABLE_DELAY = 500L
 
     override fun onServiceConnected() {
         super.onServiceConnected()
