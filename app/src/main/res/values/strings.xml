@@ -20,6 +20,7 @@
     <string name="biometric">Biometric</string>
     <string name="pin">PIN</string>
     <string name="pattern">Pattern</string>
+    <string name="password">Password</string>
     <string name="selected_text">Selected</string>
     <string name="select_auth_type">Select your preferred authentication type</string>
     <string name="set_pattern">Set Pattern</string>
@@ -33,4 +34,8 @@
 
     <string name="idle_timeout_seconds">Idle Timeout (seconds)</string>
     <string name="set_timeout">Set Timeout</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="set_password">Set Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="enter_password">Enter password</string>
 </resources>

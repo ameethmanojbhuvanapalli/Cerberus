@@ -11,6 +11,7 @@ object SharedPreferencesUtil {
     private const val AUTH_TYPE_KEY = "auth_type"
     private const val PIN_HASH_KEY = "pin_hash"
     private const val PATTERN_HASH_KEY = "pattern_hash"
+    private const val PASSWORD_HASH_KEY = "password_hash"
     private const val IDLE_TIMEOUT_KEY = "idle_timeout_ms"
     private const val DEFAULT_IDLE_TIMEOUT = 5 * 60 * 1000L
 
@@ -78,6 +79,21 @@ object SharedPreferencesUtil {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit { remove(PATTERN_HASH_KEY) }
     }
+
+    fun setPasswordHash(context: Context, hash: String) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { putString(PASSWORD_HASH_KEY, hash) }
+    }
+    fun getPasswordHash(context: Context): String? =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(PASSWORD_HASH_KEY, null)
+    fun clearPassword(context: Context) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { remove(PASSWORD_HASH_KEY) }
+    }
+    fun hasPassword(context: Context): Boolean =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .contains(PASSWORD_HASH_KEY)
 
     fun getIdleTimeout(context: Context): Long {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

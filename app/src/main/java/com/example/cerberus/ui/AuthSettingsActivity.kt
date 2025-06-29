@@ -1,15 +1,13 @@
 package com.example.cerberus.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.AuthenticatorType
-import com.example.cerberus.data.AuthenticatorTypeCache
-import com.example.cerberus.data.IdleTimeoutCache
-import com.example.cerberus.data.PatternCache
-import com.example.cerberus.data.PinCache
+import com.example.cerberus.data.*
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.service.AuthenticationService
@@ -41,6 +39,11 @@ class AuthSettingsActivity : AppCompatActivity() {
                 R.drawable.ic_pattern,
                 getString(R.string.pattern)
             ),
+            AuthenticatorTypeItem(
+                AuthenticatorType.PASSWORD,
+                R.drawable.ic_password,
+                getString(R.string.password)
+            )
         )
 
         val cachedType = AuthenticatorTypeCache.getAuthenticatorType(this)
@@ -74,6 +77,15 @@ class AuthSettingsActivity : AppCompatActivity() {
                     }
                     frag.show(supportFragmentManager, "pattern_setup")
                 }
+                AuthenticatorType.PASSWORD -> {
+                    val fragment = PasswordSetupFragment().apply {
+                        onPasswordSet = {
+                            updateSaveButtonState()
+                            Toast.makeText(this@AuthSettingsActivity, "Password set", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    fragment.show(supportFragmentManager, "password_setup")
+                }
                 else -> {}
             }
         }
@@ -83,7 +95,7 @@ class AuthSettingsActivity : AppCompatActivity() {
                 IdleTimeoutCache.setIdleTimeout(this, newTimeout)
                 AuthenticationService.getInstance(this).clearAuthenticatedApps()
                 Toast.makeText(this, "Timeout updated", Toast.LENGTH_SHORT).show()
-            }.apply  {
+            }.apply {
                 show(supportFragmentManager, "idle_timeout_picker")
             }
         }
@@ -115,6 +127,11 @@ class AuthSettingsActivity : AppCompatActivity() {
                 binding.setCredentialButton.setText(R.string.set_pattern)
                 binding.setCredentialButton.setIconResource(R.drawable.ic_pattern)
             }
+            AuthenticatorType.PASSWORD -> {
+                binding.setCredentialButton.visibility = android.view.View.VISIBLE
+                binding.setCredentialButton.setText(R.string.set_password)
+                binding.setCredentialButton.setIconResource(R.drawable.ic_password)
+            }
             else -> {
                 binding.setCredentialButton.visibility = android.view.View.GONE
             }
@@ -125,6 +142,7 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.saveButton.isEnabled = when (selectedType?.type) {
             AuthenticatorType.PIN -> PinCache.hasPin(this)
             AuthenticatorType.PATTERN -> PatternCache.hasPattern(this)
+            AuthenticatorType.PASSWORD -> PasswordCache.hasPassword(this)
             AuthenticatorType.BIOMETRIC -> true
             else -> false
         }

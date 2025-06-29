@@ -1,6 +1,7 @@
 package com.example.cerberus.auth
 
 import com.example.cerberus.auth.impl.BiometricAuthenticator
+import com.example.cerberus.auth.impl.PasswordAuthenticator
 import com.example.cerberus.auth.impl.PatternAuthenticator
 import com.example.cerberus.auth.impl.PinAuthenticator
 
@@ -12,6 +13,7 @@ object AuthenticatorFactory {
         authenticators[AuthenticatorType.BIOMETRIC] = BiometricAuthenticator()
         authenticators[AuthenticatorType.PIN] = PinAuthenticator()
         authenticators[AuthenticatorType.PATTERN] = PatternAuthenticator()
+        authenticators[AuthenticatorType.PASSWORD] = PasswordAuthenticator()
     }
 
     fun getAuthenticator(type: AuthenticatorType): Authenticator {

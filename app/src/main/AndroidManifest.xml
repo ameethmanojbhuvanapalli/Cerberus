@@ -51,6 +51,13 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
+        <activity
+            android:name=".ui.PasswordPromptActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <service
             android:name=".service.AppLockService"
             android:exported="true"
