@@ -22,4 +22,7 @@
     <string name="pattern">Pattern</string>
     <string name="selected_text">Selected</string>
     <string name="select_auth_type">Select your preferred authentication type</string>
+    <string name="set_pattern">Set Pattern</string>
+    <string name="set_pin">Set Pin</string>
+    <string name="saved">Changes saved!</string>
 </resources>

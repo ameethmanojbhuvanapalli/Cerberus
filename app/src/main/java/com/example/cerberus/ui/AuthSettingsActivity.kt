@@ -1,25 +1,28 @@
 package com.example.cerberus.ui
 
 import android.os.Bundle
-import android.widget.ListView
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticatorType
-import com.example.cerberus.model.AuthenticatorTypeItem
 import com.example.cerberus.data.AuthenticatorTypeCache
+import com.example.cerberus.model.AuthenticatorTypeItem
+import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 
 class AuthSettingsActivity : AppCompatActivity() {
-
-    private lateinit var listView: ListView
+    private lateinit var binding: ActivityAuthSettingsBinding
     private lateinit var adapter: AuthTypeSelectAdapter
+    private lateinit var authTypes: List<AuthenticatorTypeItem>
+    private var selectedType: AuthenticatorTypeItem? = null
+    private var isCredentialSet: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth_settings)
+        binding = ActivityAuthSettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        listView = findViewById(R.id.auth_type_list_view)
-
-        val items = listOf(
+        authTypes = listOf(
             AuthenticatorTypeItem(
                 AuthenticatorType.BIOMETRIC,
                 R.drawable.ic_fingerprint,
@@ -37,13 +40,70 @@ class AuthSettingsActivity : AppCompatActivity() {
             ),
         )
 
-        val currentType = AuthenticatorTypeCache.getAuthenticatorType(this)
-        val selectedItem = items.first { it.type == currentType }
+        // Get last selected or default to first
+        val cachedType = AuthenticatorTypeCache.getAuthenticatorType(this)
+        selectedType = authTypes.find { it.type == cachedType } ?: authTypes.first()
 
-        adapter = AuthTypeSelectAdapter(this, items, selectedItem) { selected ->
-            AuthenticatorTypeCache.setAuthenticatorType(this, selected.type)
+        adapter = AuthTypeSelectAdapter(this, authTypes, selectedType!!) { selected ->
+            selectedType = selected
+            isCredentialSet = false
+            updateCredentialButton()
+            updateSaveButtonState()
         }
 
-        listView.adapter = adapter
+        binding.authTypeListView.adapter = adapter
+
+        binding.setCredentialButton.setOnClickListener {
+            when (selectedType?.type) {
+                AuthenticatorType.PIN -> {
+                    isCredentialSet = true
+                    Toast.makeText(this, "Set PIN action", Toast.LENGTH_SHORT).show()
+                }
+                AuthenticatorType.PATTERN -> {
+                    isCredentialSet = true
+                    Toast.makeText(this, "Set Pattern action", Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+            updateSaveButtonState()
+        }
+
+        binding.saveButton.setOnClickListener {
+            selectedType?.let {
+                AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
+                Toast.makeText(this, getString(R.string.saved), Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+
+        updateCredentialButton()
+        updateSaveButtonState()
+    }
+
+    private fun updateCredentialButton() {
+        when (selectedType?.type) {
+            AuthenticatorType.PIN -> {
+                binding.setCredentialButton.visibility = View.VISIBLE
+                binding.setCredentialButton.setText(R.string.set_pin)
+                binding.setCredentialButton.setIconResource(R.drawable.ic_pin)
+            }
+            AuthenticatorType.PATTERN -> {
+                binding.setCredentialButton.visibility = View.VISIBLE
+                binding.setCredentialButton.setText(R.string.set_pattern)
+                binding.setCredentialButton.setIconResource(R.drawable.ic_pattern)
+            }
+            else -> {
+                binding.setCredentialButton.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun updateSaveButtonState() {
+        binding.saveButton.isEnabled = when (selectedType?.type) {
+            AuthenticatorType.PIN -> isCredentialSet
+            AuthenticatorType.PATTERN -> isCredentialSet
+            AuthenticatorType.BIOMETRIC -> true
+            else -> false
+        }
     }
 }

@@ -53,7 +53,7 @@ class AppListFragment : Fragment() {
             adapter?.let {
                 LockedAppsCache.setLockedApps(context, it.getLockedApps())
                 (activity as? AppListTabsActivity)?.refreshAllTabs()
-                android.widget.Toast.makeText(context, "Changes saved!", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, R.string.saved, android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }
