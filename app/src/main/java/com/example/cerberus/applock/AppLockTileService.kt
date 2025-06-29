@@ -10,6 +10,8 @@ import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.example.cerberus.R
+import com.example.cerberus.auth.AuthenticationCallback
+import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.data.ProtectionCache
 import com.example.cerberus.utils.PermissionsUtil
 
@@ -22,10 +24,11 @@ class AppLockTileService : TileService() {
 
     override fun onClick() {
         val enabled = isProtectionEnabled()
-        setProtectionEnabled(!enabled)
-        updateTileState()
 
         if (!enabled) {
+            setProtectionEnabled(true)
+            updateTileState()
+
             if (PermissionsUtil.hasAccessibilityPermission(this)) {
                 sendBroadcast(Intent("com.example.cerberus.START_LOCK_SERVICE"))
                 Toast.makeText(this, "Protection Enabled", Toast.LENGTH_SHORT).show()
@@ -43,10 +46,33 @@ class AppLockTileService : TileService() {
                 Toast.makeText(this, "Grant Accessibility Permission", Toast.LENGTH_SHORT).show()
             }
         } else {
-            sendBroadcast(Intent("com.example.cerberus.STOP_LOCK_SERVICE"))
-            Toast.makeText(this, "Protection Disabled", Toast.LENGTH_SHORT).show()
+            val authService = AuthenticationManager.getInstance(applicationContext).getAuthService()
+
+            val callback = object : AuthenticationCallback {
+                override fun onAuthenticationSucceeded(packageName: String) {
+                    setProtectionEnabled(false)
+                    sendBroadcast(Intent("com.example.cerberus.STOP_LOCK_SERVICE"))
+                    Toast.makeText(applicationContext, "Protection Disabled", Toast.LENGTH_SHORT).show()
+                    updateTileState()
+                    authService?.unregisterCallback(this)
+                }
+
+                override fun onAuthenticationFailed(packageName: String) {
+                    Toast.makeText(applicationContext, "Authentication Failed", Toast.LENGTH_SHORT).show()
+                    authService?.unregisterCallback(this)
+                }
+            }
+
+            authService?.registerCallback(callback)
+
+            val requested = authService?.requestAuthenticationIfNeeded(applicationContext.packageName) ?: false
+
+            if (!requested) {
+                callback.onAuthenticationSucceeded(applicationContext.packageName)
+            }
         }
     }
+
 
     private fun updateTileState() {
         qsTile?.apply {
