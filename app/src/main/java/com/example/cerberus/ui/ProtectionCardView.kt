@@ -4,12 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import androidx.core.content.ContextCompat
 import com.example.cerberus.R
 import com.example.cerberus.data.ProtectionCache
 import com.example.cerberus.databinding.ProtectionToggleCardBinding
 
-class ProtectionToggleCard @JvmOverloads constructor(
+class ProtectionCardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
