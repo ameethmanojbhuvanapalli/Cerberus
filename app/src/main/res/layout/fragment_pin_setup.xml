@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface_black">
+
+    <LinearLayout
+        android:id="@+id/pin_setup_root"
+        android:layout_width="337dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_gradient_black"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="32dp">
+
+        <TextView
+            android:id="@+id/pin_setup_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Set PIN"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/pin_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:autofillHints=""
+            android:backgroundTint="@android:color/darker_gray"
+            android:hint="Enter PIN"
+            android:inputType="numberPassword"
+            android:maxLength="8"
+            android:minHeight="48dp"
+            android:textColor="@android:color/white" />
+
+        <EditText
+            android:id="@+id/pin_confirm_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="24dp"
+            android:autofillHints=""
+            android:backgroundTint="@android:color/darker_gray"
+            android:hint="Confirm PIN"
+            android:inputType="numberPassword"
+            android:maxLength="8"
+            android:minHeight="48dp"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="Set PIN" />
+    </LinearLayout>
+</FrameLayout>

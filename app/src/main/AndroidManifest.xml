@@ -37,6 +37,14 @@
             android:theme="@style/SecureBlockerTheme"
             android:excludeFromRecents="true" />
 
+        <activity
+            android:name=".ui.PinPromptActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/SecureBlockerTheme"
+            android:excludeFromRecents="true" />
+
         <service
             android:name=".service.AppLockService"
             android:exported="true"

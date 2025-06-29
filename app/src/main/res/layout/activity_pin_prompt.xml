@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pin_prompt_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/pin_prompt_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter PIN"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:layout_marginBottom="16dp"
+        android:textStyle="bold"/>
+
+    <EditText
+        android:id="@+id/pin_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:hint="Enter your PIN"
+        android:inputType="numberPassword"
+        android:maxLength="8"
+        android:minHeight="48dp" />
+
+    <Button
+        android:id="@+id/confirm_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Unlock"
+        android:enabled="true"/>
+</LinearLayout>

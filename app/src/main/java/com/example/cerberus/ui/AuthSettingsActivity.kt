@@ -8,6 +8,7 @@ import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
 import com.example.cerberus.model.AuthenticatorTypeItem
+import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 
 class AuthSettingsActivity : AppCompatActivity() {
@@ -56,8 +57,14 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.setCredentialButton.setOnClickListener {
             when (selectedType?.type) {
                 AuthenticatorType.PIN -> {
-                    isCredentialSet = true
-                    Toast.makeText(this, "Set PIN action", Toast.LENGTH_SHORT).show()
+                    val fragment = PinSetupFragment().apply {
+                        onPinSet = {
+                            isCredentialSet = true
+                            updateSaveButtonState()
+                            Toast.makeText(context, "PIN set", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    fragment.show(supportFragmentManager, "pin_setup")
                 }
                 AuthenticatorType.PATTERN -> {
                     isCredentialSet = true
@@ -65,7 +72,6 @@ class AuthSettingsActivity : AppCompatActivity() {
                 }
                 else -> {}
             }
-            updateSaveButtonState()
         }
 
         binding.saveButton.setOnClickListener {
@@ -100,7 +106,7 @@ class AuthSettingsActivity : AppCompatActivity() {
 
     private fun updateSaveButtonState() {
         binding.saveButton.isEnabled = when (selectedType?.type) {
-            AuthenticatorType.PIN -> isCredentialSet
+            AuthenticatorType.PIN -> PinCache.hasPin(this)
             AuthenticatorType.PATTERN -> isCredentialSet
             AuthenticatorType.BIOMETRIC -> true
             else -> false
