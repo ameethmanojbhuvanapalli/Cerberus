@@ -93,8 +93,9 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
     }
 
     fun clearAuthenticatedApps() {
-        authenticatedApps.clear()
-        Log.d(TAG, "clearAuthenticatedApps: Cleared all authenticated app entries")
+        val currentApp = appContext.packageName
+        authenticatedApps.keys.removeIf { it != currentApp }
+        Log.d(TAG, "clearAuthenticatedApps: Cleared all except $currentApp")
     }
 
     fun updateExpirationForAppExit(packageName: String) {

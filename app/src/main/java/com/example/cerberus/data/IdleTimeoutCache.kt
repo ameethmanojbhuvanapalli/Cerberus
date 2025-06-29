@@ -10,16 +10,12 @@ object IdleTimeoutCache {
         if (cachedTimeout == null) {
             cachedTimeout = SharedPreferencesUtil.getIdleTimeout(context)
         }
-        return cachedTimeout ?: 15000L
+        return cachedTimeout!!
     }
 
     fun setIdleTimeout(context: Context, timeoutMs: Long) {
         SharedPreferencesUtil.setIdleTimeout(context, timeoutMs)
         cachedTimeout = timeoutMs
-    }
-
-    fun refresh(context: Context) {
-        cachedTimeout = SharedPreferencesUtil.getIdleTimeout(context)
     }
 
     fun clear() {

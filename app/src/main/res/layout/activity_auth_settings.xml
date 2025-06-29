@@ -63,7 +63,7 @@
                 android:id="@+id/set_idle_timeout_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Set Idle Timeout"
+                android:text="@string/set_timeout"
                 android:backgroundTint="@color/gray"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"

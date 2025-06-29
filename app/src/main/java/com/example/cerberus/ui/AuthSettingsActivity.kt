@@ -79,13 +79,13 @@ class AuthSettingsActivity : AppCompatActivity() {
         }
 
         binding.setIdleTimeoutButton.setOnClickListener {
-            val currentTimeout = IdleTimeoutCache.getIdleTimeout(this)
-            val dialog = IdleTimeoutPickerFragment(currentTimeout) { newTimeoutMs ->
-                IdleTimeoutCache.setIdleTimeout(this, newTimeoutMs)
+            IdleTimeoutPickerFragment { newTimeout ->
+                IdleTimeoutCache.setIdleTimeout(this, newTimeout)
                 AuthenticationService.getInstance(this).clearAuthenticatedApps()
-                Toast.makeText(this, "Idle Timeout set to ${newTimeoutMs / 1000} seconds", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Timeout updated", Toast.LENGTH_SHORT).show()
+            }.apply  {
+                show(supportFragmentManager, "idle_timeout_picker")
             }
-            dialog.show(supportFragmentManager, "idle_timeout_picker")
         }
 
         binding.saveButton.setOnClickListener {

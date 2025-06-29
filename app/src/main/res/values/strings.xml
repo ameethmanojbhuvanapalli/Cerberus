@@ -32,4 +32,5 @@
     <string name="confirm_pin">Confirm Pin</string>
 
     <string name="idle_timeout_seconds">Idle Timeout (seconds)</string>
+    <string name="set_timeout">Set Timeout</string>
 </resources>
