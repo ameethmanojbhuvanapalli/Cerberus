@@ -91,8 +91,6 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.saveButton.setOnClickListener {
             val durationMs = IdleTimeoutCache.getIdleTimeout(this)
             AuthenticationService.getInstance(this).clearAuthenticatedApps()
-            Toast.makeText(this, "Duration: $durationMs ms saved", Toast.LENGTH_SHORT).show()
-
             selectedType?.let {
                 AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
                 AuthenticationManager.getInstance(this).setAuthenticatorType(it.type)
