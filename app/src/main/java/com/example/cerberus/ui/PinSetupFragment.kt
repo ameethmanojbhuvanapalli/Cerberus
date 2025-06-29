@@ -13,6 +13,11 @@ class PinSetupFragment : DialogFragment() {
     private val binding get() = _binding!!
     var onPinSet: (() -> Unit)? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPinSetupBinding.inflate(inflater, container, false)
         return binding.root

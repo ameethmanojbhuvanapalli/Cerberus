@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.cerberus.auth.AuthenticatorType
+import com.example.cerberus.data.AuthenticatorTypeCache
 import com.example.cerberus.ui.AppListTabsActivity
 import com.example.cerberus.ui.AuthSettingsActivity
 import com.example.cerberus.ui.PermissionHelperFragment
@@ -35,7 +37,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.authSettingsCard.apply {
             setTitle(getString(R.string.auth_settings))
-            setDescription(getString(R.string.select_auth_type))
+            setDescription(getString(R.string.auth_settings_desc))
+            setPillText(getString(R.string.auth_enabled_text, AuthenticatorTypeCache.getAuthenticatorType(this@MainActivity).name))
             setIcon(R.drawable.ic_auth_settings)
             setIconContentDescription(getString(R.string.auth_settings))
             setOnClickListener {
@@ -61,6 +64,14 @@ class MainActivity : AppCompatActivity() {
         } else {
             removePermissionFragmentIfPresent()
             viewModel.updateLockedAppsCount(this)
+            val currentType = AuthenticatorTypeCache.getAuthenticatorType(this)
+            val typeName = when (currentType) {
+                AuthenticatorType.BIOMETRIC -> getString(R.string.biometric)
+                AuthenticatorType.PIN -> getString(R.string.pin)
+                AuthenticatorType.PATTERN -> getString(R.string.pattern)
+                AuthenticatorType.PASSWORD -> getString(R.string.password)
+            }
+            binding.authSettingsCard.setPillText(getString(R.string.auth_enabled_text, typeName))
         }
     }
 

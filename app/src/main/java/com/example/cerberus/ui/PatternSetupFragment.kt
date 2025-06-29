@@ -16,6 +16,11 @@ class PatternSetupFragment : DialogFragment() {
     var onPatternSet: (() -> Unit)? = null
     private var first: String? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _bind = FragmentPatternSetupBinding.inflate(inflater, container, false)
         return binding.root

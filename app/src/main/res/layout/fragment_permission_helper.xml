@@ -36,23 +36,23 @@
         android:textColor="@android:color/white"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_accessibility_permission"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/grant_accessibility_permission"
-        app:icon="@drawable/ic_accessibility"
-        app:iconGravity="textStart"
-        android:background="@drawable/bg_gradient_red"
-        android:textColor="@android:color/white"/>
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_overlay_permission"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/grant_overlay_permission"
         app:icon="@drawable/ic_overlay"
+        app:iconGravity="textStart"
+        android:background="@drawable/bg_gradient_red"
+        android:textColor="@android:color/white"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_accessibility_permission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/grant_accessibility_permission"
+        app:icon="@drawable/ic_accessibility"
         app:iconGravity="textStart"
         android:background="@drawable/bg_gradient_red"
         android:textColor="@android:color/white"/>
