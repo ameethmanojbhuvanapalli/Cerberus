@@ -26,6 +26,9 @@
         <activity android:name=".ui.AppListTabsActivity"
             android:exported="true" />
 
+        <activity android:name=".ui.AuthSettingsActivity"
+            android:exported="true" />
+
         <activity
             android:name=".ui.BiometricPromptActivity"
             android:exported="false"

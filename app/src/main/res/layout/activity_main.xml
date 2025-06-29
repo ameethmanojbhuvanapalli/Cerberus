@@ -23,8 +23,13 @@
             android:text="@string/more_features"
             android:textColor="@color/white"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:visibility="gone"/>
+            android:textStyle="bold"/>
+
+        <com.example.cerberus.ui.HomeFeatureCardView
+            android:id="@+id/authSettingsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"/>
 
     </LinearLayout>
 </ScrollView>

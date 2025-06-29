@@ -15,4 +15,10 @@
     <string name="grant_overlay_permission">Grant Overlay Permission</string>
     <string name="permissions_required">Permissions Required</string>
     <string name="permissions_desc">To fully secure your apps, Cerberus needs Accessibility and Overlay permissions. Please grant them below.</string>
+
+    <string name="auth_settings">Authentication Settings</string>
+    <string name="biometric">Biometric</string>
+    <string name="pin">PIN</string>
+    <string name="pattern">Pattern</string>
+    <string name="select_auth_type">Select your preferred authentication type</string>
 </resources>

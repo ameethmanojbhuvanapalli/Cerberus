@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.ui.AppListTabsActivity
+import com.example.cerberus.ui.AuthSettingsActivity
 import com.example.cerberus.ui.PermissionHelperFragment
 import com.example.cerberus.utils.PermissionManager
 import com.example.cerberus.databinding.ActivityMainBinding
@@ -29,6 +30,16 @@ class MainActivity : AppCompatActivity() {
             setIconContentDescription(getString(R.string.app_lock))
             setOnClickListener {
                 startActivity(Intent(context, AppListTabsActivity::class.java))
+            }
+        }
+
+        binding.authSettingsCard.apply {
+            setTitle(getString(R.string.auth_settings))
+            setDescription(getString(R.string.select_auth_type))
+            setIcon(R.drawable.ic_auth_settings)
+            setIconContentDescription(getString(R.string.auth_settings))
+            setOnClickListener {
+                startActivity(Intent(context, AuthSettingsActivity::class.java))
             }
         }
 
