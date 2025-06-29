@@ -1,4 +1,4 @@
-package com.example.cerberus.data
+package com.example.cerberus.utils
 
 import android.content.Context
 import androidx.core.content.edit
@@ -9,6 +9,7 @@ object SharedPreferencesUtil {
     private const val PREFS_NAME = "AppLockPrefs"
     private const val LOCKED_APPS_KEY = "locked_apps"
     private const val AUTH_TYPE_KEY = "auth_type"
+    private const val PROTECTION_ENABLED_KEY = "protection_enabled"
     private const val PIN_HASH_KEY = "pin_hash"
     private const val PATTERN_HASH_KEY = "pattern_hash"
     private const val PASSWORD_HASH_KEY = "password_hash"
@@ -103,6 +104,16 @@ object SharedPreferencesUtil {
     fun setIdleTimeout(context: Context, timeoutMs: Long) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putLong(IDLE_TIMEOUT_KEY, timeoutMs) }
+    }
+
+    fun isProtectionEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(PROTECTION_ENABLED_KEY, false)
+    }
+
+    fun setProtectionEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(PROTECTION_ENABLED_KEY, enabled) }
     }
 }
 

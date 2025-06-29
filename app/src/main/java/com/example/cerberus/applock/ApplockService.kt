@@ -1,21 +1,21 @@
-package com.example.cerberus.service
+package com.example.cerberus.applock
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.data.LockedAppsCache
+import com.example.cerberus.data.ProtectionCache
 
 class AppLockService : AccessibilityService() {
     private var lastPackageName: String? = null
     private var lastClassName: String? = null
-    private lateinit var authService: AuthenticationService
     private val TAG = "AppLockService"
     private lateinit var myPackageName: String
     private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
 
-    // Heuristic state
     private val handler = Handler(Looper.getMainLooper())
     private var stablePromptRunnable: Runnable? = null
     private var stableSince: Long = 0L
@@ -25,9 +25,9 @@ class AppLockService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-        authService = AuthenticationService.getInstance(applicationContext)
+        AuthenticationManager.getInstance(applicationContext).startAuthService()
+        AuthenticationManager.getInstance(applicationContext).getAuthService()?.cleanupExpiredEntries()
         Log.d(TAG, "Service connected")
-        authService.cleanupExpiredEntries()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -37,22 +37,18 @@ class AppLockService : AccessibilityService() {
         val foregroundPackage = event.packageName?.toString() ?: return
         val foregroundClass = event.className?.toString() ?: return
 
-        // Ignore authentication prompt activity
         if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) return
 
-        // Always treat our own package as locked
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
-        // Handle app exit update
         if (lastPackageName != null && lastPackageName != foregroundPackage) {
             if (lockedApps.contains(lastPackageName)) {
-                authService.updateExpirationForAppExit(lastPackageName!!)
+                AuthenticationManager.getInstance(applicationContext).getAuthService()
+                    ?.updateExpirationForAppExit(lastPackageName!!)
             }
         }
 
-        // Heuristic: Only prompt after activity settles
         if (lockedApps.contains(foregroundPackage)) {
-            // If package or class changed, reset timer
             if (lastPackageName != foregroundPackage) {
                 activityChangeCount = 1
                 stableSince = System.currentTimeMillis()
@@ -61,16 +57,15 @@ class AppLockService : AccessibilityService() {
                 stableSince = System.currentTimeMillis()
             }
 
-            // Cancel previous scheduled prompt
             stablePromptRunnable?.let { handler.removeCallbacks(it) }
             stablePromptRunnable = Runnable {
-                // Only prompt if still on same package/class as when scheduled
                 if (lockedApps.contains(foregroundPackage)
                     && lastPackageName == foregroundPackage
                     && lastClassName == foregroundClass
                 ) {
                     Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    authService.requestAuthenticationIfNeeded(foregroundPackage)
+                    AuthenticationManager.getInstance(applicationContext).getAuthService()
+                        ?.requestAuthenticationIfNeeded(foregroundPackage)
                 }
             }
             handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
@@ -83,13 +78,14 @@ class AppLockService : AccessibilityService() {
     override fun onInterrupt() {}
 
     private fun isProtectionEnabled(): Boolean {
-        return getSharedPreferences("settings", MODE_PRIVATE)
-            .getBoolean("protection_enabled", false)
+        return ProtectionCache.isProtectionEnabled(this)
     }
 
     override fun onDestroy() {
-        lastPackageName?.let { authService.updateExpirationForAppExit(it) }
-        authService.shutdown()
+        lastPackageName?.let {
+            AuthenticationManager.getInstance(applicationContext).getAuthService()
+                ?.updateExpirationForAppExit(it)
+        }
         super.onDestroy()
     }
 }

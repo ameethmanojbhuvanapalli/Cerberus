@@ -9,7 +9,7 @@ import com.example.cerberus.data.AuthenticatorTypeCache
 import com.example.cerberus.ui.AppListTabsActivity
 import com.example.cerberus.ui.AuthSettingsActivity
 import com.example.cerberus.ui.PermissionHelperFragment
-import com.example.cerberus.utils.PermissionManager
+import com.example.cerberus.utils.PermissionsUtil
 import com.example.cerberus.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -57,8 +57,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionsAndUpdateUI() {
-        if (!PermissionManager.hasOverlayPermission(this) ||
-            !PermissionManager.hasAccessibilityPermission(this)
+        if (!PermissionsUtil.hasOverlayPermission(this) ||
+            !PermissionsUtil.hasAccessibilityPermission(this)
         ) {
             showPermissionFragment()
         } else {

@@ -1,9 +1,8 @@
-package com.example.cerberus.service
+package com.example.cerberus.applock
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.cerberus.utils.ApplockManager
 
 class AppLockServiceControlReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {

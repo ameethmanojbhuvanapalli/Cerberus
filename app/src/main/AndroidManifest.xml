@@ -59,7 +59,7 @@
             android:excludeFromRecents="true" />
 
         <service
-            android:name=".service.AppLockService"
+            android:name=".applock.AppLockService"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
@@ -71,7 +71,7 @@
         </service>
 
         <service
-            android:name=".service.AppLockTileService"
+            android:name=".applock.AppLockTileService"
             android:label="App Lock"
             android:exported="true"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -80,7 +80,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".service.AppLockServiceControlReceiver" />
+        <receiver android:name=".applock.AppLockServiceControlReceiver" />
 
     </application>
 

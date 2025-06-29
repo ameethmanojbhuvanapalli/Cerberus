@@ -1,6 +1,5 @@
 package com.example.cerberus.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,7 +9,6 @@ import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.*
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 import com.example.cerberus.model.AuthenticatorTypeItem
-import com.example.cerberus.service.AuthenticationService
 
 class AuthSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthSettingsBinding
@@ -24,26 +22,10 @@ class AuthSettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         authTypes = listOf(
-            AuthenticatorTypeItem(
-                AuthenticatorType.BIOMETRIC,
-                R.drawable.ic_fingerprint,
-                getString(R.string.biometric)
-            ),
-            AuthenticatorTypeItem(
-                AuthenticatorType.PIN,
-                R.drawable.ic_pin,
-                getString(R.string.pin)
-            ),
-            AuthenticatorTypeItem(
-                AuthenticatorType.PATTERN,
-                R.drawable.ic_pattern,
-                getString(R.string.pattern)
-            ),
-            AuthenticatorTypeItem(
-                AuthenticatorType.PASSWORD,
-                R.drawable.ic_password,
-                getString(R.string.password)
-            )
+            AuthenticatorTypeItem(AuthenticatorType.BIOMETRIC, R.drawable.ic_fingerprint, getString(R.string.biometric)),
+            AuthenticatorTypeItem(AuthenticatorType.PIN, R.drawable.ic_pin, getString(R.string.pin)),
+            AuthenticatorTypeItem(AuthenticatorType.PATTERN, R.drawable.ic_pattern, getString(R.string.pattern)),
+            AuthenticatorTypeItem(AuthenticatorType.PASSWORD, R.drawable.ic_password, getString(R.string.password))
         )
 
         val cachedType = AuthenticatorTypeCache.getAuthenticatorType(this)
@@ -69,13 +51,13 @@ class AuthSettingsActivity : AppCompatActivity() {
                     fragment.show(supportFragmentManager, "pin_setup")
                 }
                 AuthenticatorType.PATTERN -> {
-                    val frag = PatternSetupFragment().apply {
+                    val fragment = PatternSetupFragment().apply {
                         onPatternSet = {
                             updateSaveButtonState()
                             Toast.makeText(this@AuthSettingsActivity, "Pattern set", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    frag.show(supportFragmentManager, "pattern_setup")
+                    fragment.show(supportFragmentManager, "pattern_setup")
                 }
                 AuthenticatorType.PASSWORD -> {
                     val fragment = PasswordSetupFragment().apply {
@@ -93,7 +75,7 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.setIdleTimeoutButton.setOnClickListener {
             IdleTimeoutPickerFragment { newTimeout ->
                 IdleTimeoutCache.setIdleTimeout(this, newTimeout)
-                AuthenticationService.getInstance(this).clearAuthenticatedApps()
+                AuthenticationManager.getInstance(this).clearAuthenticatedApps()
                 Toast.makeText(this, "Timeout updated", Toast.LENGTH_SHORT).show()
             }.apply {
                 show(supportFragmentManager, "idle_timeout_picker")
@@ -101,11 +83,10 @@ class AuthSettingsActivity : AppCompatActivity() {
         }
 
         binding.saveButton.setOnClickListener {
-            val durationMs = IdleTimeoutCache.getIdleTimeout(this)
-            AuthenticationService.getInstance(this).clearAuthenticatedApps()
             selectedType?.let {
                 AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
                 AuthenticationManager.getInstance(this).setAuthenticatorType(it.type)
+                AuthenticationManager.getInstance(this).clearAuthenticatedApps()
                 Toast.makeText(this, getString(R.string.saved), Toast.LENGTH_SHORT).show()
                 finish()
             }

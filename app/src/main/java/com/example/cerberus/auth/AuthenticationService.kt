@@ -1,18 +1,15 @@
-package com.example.cerberus.service
+package com.example.cerberus.auth
 
 import android.content.Context
 import android.util.Log
-import com.example.cerberus.auth.AuthenticationCallback
-import com.example.cerberus.auth.AuthenticationManager
-import com.example.cerberus.auth.Authenticator
-import com.example.cerberus.auth.AuthenticatorChangeListener
 import com.example.cerberus.data.IdleTimeoutCache
 import java.util.concurrent.ConcurrentHashMap
 
-class AuthenticationService(context: Context) : AuthenticatorChangeListener {
+class AuthenticationService(
+    context: Context,
+    private var authenticator: Authenticator
+) {
     private val appContext = context.applicationContext
-    private val authManager = AuthenticationManager.getInstance(appContext)
-    private var authenticator: Authenticator = authManager.getCurrentAuthenticator()
     private val authenticatedApps = ConcurrentHashMap<String, Long>()
     private val callbacks = mutableListOf<AuthenticationCallback>()
     private val TAG = "AuthenticationService"
@@ -23,7 +20,6 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
 
     init {
         Log.d(TAG, "Initializing AuthenticationService")
-        authManager.registerListener(this)
         internalCallback = object : AuthenticationCallback {
             override fun onAuthenticationSucceeded(packageName: String) {
                 Log.d(TAG, "internalCallback: onAuthenticationSucceeded for $packageName")
@@ -37,18 +33,6 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
         }
 
         authenticator.registerCallback(internalCallback)
-        Log.d(TAG, "Registered internalCallback with ${authenticator::class.java.simpleName}")
-    }
-
-    companion object {
-        @Volatile
-        private var instance: AuthenticationService? = null
-
-        fun getInstance(context: Context): AuthenticationService {
-            return instance ?: synchronized(this) {
-                instance ?: AuthenticationService(context.applicationContext).also { instance = it }
-            }
-        }
     }
 
     fun requestAuthenticationIfNeeded(packageName: String): Boolean {
@@ -110,7 +94,6 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
     }
 
     private fun handleAuthenticationSuccess(packageName: String) {
-        Log.d(TAG, "handleAuthenticationSuccess: $packageName")
         authenticatedApps[packageName] = Long.MAX_VALUE
         synchronized(callbacks) {
             callbacks.forEach { it.onAuthenticationSucceeded(packageName) }
@@ -118,22 +101,21 @@ class AuthenticationService(context: Context) : AuthenticatorChangeListener {
     }
 
     private fun handleAuthenticationFailure(packageName: String) {
-        Log.d(TAG, "handleAuthenticationFailure: $packageName")
         authenticatedApps.remove(packageName)
         synchronized(callbacks) {
             callbacks.forEach { it.onAuthenticationFailed(packageName) }
         }
     }
 
-    override fun onAuthenticatorChanged(newAuthenticator: Authenticator) {
+    fun updateAuthenticator(newAuthenticator: Authenticator) {
         authenticator.unregisterCallback(internalCallback)
         authenticator = newAuthenticator
         authenticator.registerCallback(internalCallback)
-        Log.d(TAG, "onAuthenticatorChanged: Switched to ${newAuthenticator::class.java.simpleName}")
+        Log.d(TAG, "updateAuthenticator: Switched to ${newAuthenticator::class.java.simpleName}")
     }
 
     fun shutdown() {
-        Log.d(TAG, "shutdown: Unregistering internal callback")
         authenticator.unregisterCallback(internalCallback)
+        Log.d(TAG, "shutdown: Unregistered internal callback")
     }
 }

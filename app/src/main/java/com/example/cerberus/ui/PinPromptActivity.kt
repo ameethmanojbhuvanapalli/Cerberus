@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.ActivityPinPromptBinding
-import com.example.cerberus.utils.HashUtils
+import com.example.cerberus.utils.HashUtil
 
 class PinPromptActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPinPromptBinding
@@ -20,7 +20,7 @@ class PinPromptActivity : AppCompatActivity() {
 
         binding.confirmButton.setOnClickListener {
             val pin = binding.pinInput.text.toString()
-            val hash = HashUtils.hash(pin)
+            val hash = HashUtil.hash(pin)
             if (PinCache.getPinHash(this) == hash) {
                 sendBroadcast(Intent("com.example.cerberus.AUTH_SUCCESS"))
                 finish()

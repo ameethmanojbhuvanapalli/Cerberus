@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.cerberus.data.PinCache
 import com.example.cerberus.databinding.FragmentPinSetupBinding
-import com.example.cerberus.utils.HashUtils
+import com.example.cerberus.utils.HashUtil
 
 class PinSetupFragment : DialogFragment() {
     private var _binding: FragmentPinSetupBinding? = null
@@ -35,7 +35,7 @@ class PinSetupFragment : DialogFragment() {
                 Toast.makeText(context, "PINs do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val hash = HashUtils.hash(pin)
+            val hash = HashUtil.hash(pin)
             PinCache.setPin(requireContext(), hash)
             onPinSet?.invoke()
             dismiss()

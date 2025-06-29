@@ -1,4 +1,4 @@
-package com.example.cerberus.service
+package com.example.cerberus.applock
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -10,7 +10,8 @@ import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.example.cerberus.R
-import com.example.cerberus.utils.PermissionManager
+import com.example.cerberus.data.ProtectionCache
+import com.example.cerberus.utils.PermissionsUtil
 
 class AppLockTileService : TileService() {
 
@@ -25,7 +26,7 @@ class AppLockTileService : TileService() {
         updateTileState()
 
         if (!enabled) {
-            if (PermissionManager.hasAccessibilityPermission(this)) {
+            if (PermissionsUtil.hasAccessibilityPermission(this)) {
                 sendBroadcast(Intent("com.example.cerberus.START_LOCK_SERVICE"))
                 Toast.makeText(this, "Protection Enabled", Toast.LENGTH_SHORT).show()
             } else {
@@ -57,15 +58,11 @@ class AppLockTileService : TileService() {
     }
 
     private fun isProtectionEnabled(): Boolean {
-        return getSharedPreferences("settings", MODE_PRIVATE)
-            .getBoolean("protection_enabled", false)
+        return ProtectionCache.isProtectionEnabled(this)
     }
 
     private fun setProtectionEnabled(enabled: Boolean) {
-        getSharedPreferences("settings", MODE_PRIVATE)
-            .edit()
-            .putBoolean("protection_enabled", enabled)
-            .apply()
+        ProtectionCache.setProtectionEnabled(this, enabled)
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)

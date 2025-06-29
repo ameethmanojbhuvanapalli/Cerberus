@@ -5,9 +5,9 @@ import android.content.Intent
 import android.provider.Settings
 import android.text.TextUtils
 import androidx.core.net.toUri
-import com.example.cerberus.service.AppLockService
+import com.example.cerberus.applock.AppLockService
 
-object PermissionManager {
+object PermissionsUtil {
 
     fun hasOverlayPermission(context: Context): Boolean =
         Settings.canDrawOverlays(context)

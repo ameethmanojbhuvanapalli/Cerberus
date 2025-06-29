@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.data.PasswordCache
 import com.example.cerberus.databinding.ActivityPasswordPromptBinding
-import com.example.cerberus.utils.HashUtils
+import com.example.cerberus.utils.HashUtil
 
 class PasswordPromptActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPasswordPromptBinding
@@ -18,7 +18,7 @@ class PasswordPromptActivity : AppCompatActivity() {
 
         binding.confirmButton.setOnClickListener {
             val pwd = binding.passwordInput.text.toString()
-            if (HashUtils.hash(pwd) == PasswordCache.getPasswordHash(this)) {
+            if (HashUtil.hash(pwd) == PasswordCache.getPasswordHash(this)) {
                 sendBroadcast(Intent("com.example.cerberus.AUTH_SUCCESS"))
                 finish()
             } else {

@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.cerberus.data.PasswordCache
 import com.example.cerberus.databinding.FragmentPasswordSetupBinding
-import com.example.cerberus.utils.HashUtils
+import com.example.cerberus.utils.HashUtil
 
 class PasswordSetupFragment : DialogFragment() {
     private var _binding: FragmentPasswordSetupBinding? = null
@@ -36,7 +36,7 @@ class PasswordSetupFragment : DialogFragment() {
                 Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            PasswordCache.setPassword(requireContext(), HashUtils.hash(pwd))
+            PasswordCache.setPassword(requireContext(), HashUtil.hash(pwd))
             onPasswordSet?.invoke()
             dismiss()
         }
