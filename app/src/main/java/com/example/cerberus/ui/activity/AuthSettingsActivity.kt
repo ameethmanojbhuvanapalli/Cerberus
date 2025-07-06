@@ -1,14 +1,19 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.activity
 
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticationManager
-import com.example.cerberus.auth.AuthenticatorType
+import com.example.cerberus.auth.authenticator.AuthenticatorType
 import com.example.cerberus.data.*
 import com.example.cerberus.databinding.ActivityAuthSettingsBinding
 import com.example.cerberus.model.AuthenticatorTypeItem
+import com.example.cerberus.ui.adapter.AuthTypeSelectAdapter
+import com.example.cerberus.ui.fragment.IdleTimeoutPickerFragment
+import com.example.cerberus.ui.fragment.PasswordSetupFragment
+import com.example.cerberus.ui.fragment.PatternSetupFragment
+import com.example.cerberus.ui.fragment.PinSetupFragment
 
 class AuthSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthSettingsBinding

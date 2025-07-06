@@ -1,4 +1,4 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater

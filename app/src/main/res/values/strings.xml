@@ -14,8 +14,11 @@
     <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
     <string name="grant_overlay_permission">Grant Overlay Permission</string>
     <string name="permissions_required">Permissions Required</string>
-    <string name="permissions_desc">To fully secure your apps, Cerberus needs Accessibility and Overlay permissions. Please grant them below.</string>
+    <string name="permissions_desc">
+        To fully secure your apps, Cerberus needs Accessibility and Overlay permissions. Please grant them below.
+    </string>
 
+    <!-- Authentication Settings -->
     <string name="auth_settings">Authentication Settings</string>
     <string name="biometric">Biometric</string>
     <string name="pin">PIN</string>
@@ -33,6 +36,7 @@
     <string name="unlock">Unlock</string>
     <string name="confirm_pin">Confirm Pin</string>
 
+    <!-- Password/Timeout -->
     <string name="idle_timeout_seconds">Idle Timeout (seconds)</string>
     <string name="set_timeout">Set Timeout</string>
     <string name="enter_your_password">Enter your password</string>
@@ -40,10 +44,10 @@
     <string name="confirm_password">Confirm password</string>
     <string name="enter_password">Enter password</string>
 
+    <!-- Protection Status -->
     <string name="protection_status">Protection Status</string>
     <string name="protection_on">Protection is ON</string>
     <string name="protection_off">Protection is OFF</string>
     <string name="protection_on_desc">Your device is currently protected.</string>
     <string name="protection_off_desc">Protection is currently disabled.</string>
-
 </resources>

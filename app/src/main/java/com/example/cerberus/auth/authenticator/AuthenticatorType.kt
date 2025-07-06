@@ -1,4 +1,4 @@
-package com.example.cerberus.auth
+package com.example.cerberus.auth.authenticator
 
 enum class AuthenticatorType {
     BIOMETRIC,

@@ -1,9 +1,9 @@
-package com.example.cerberus.auth
+package com.example.cerberus.auth.authenticator
 
-import com.example.cerberus.auth.impl.BiometricAuthenticator
-import com.example.cerberus.auth.impl.PasswordAuthenticator
-import com.example.cerberus.auth.impl.PatternAuthenticator
-import com.example.cerberus.auth.impl.PinAuthenticator
+import com.example.cerberus.auth.authenticator.impl.BiometricAuthenticator
+import com.example.cerberus.auth.authenticator.impl.PasswordAuthenticator
+import com.example.cerberus.auth.authenticator.impl.PatternAuthenticator
+import com.example.cerberus.auth.authenticator.impl.PinAuthenticator
 
 object AuthenticatorFactory {
     private val authenticators = mutableMapOf<AuthenticatorType, Authenticator>()

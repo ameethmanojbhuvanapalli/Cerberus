@@ -1,9 +1,11 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.cerberus.R
+import com.example.cerberus.ui.adapter.AppListTabsPagerAdapter
+import com.example.cerberus.ui.fragment.AppListFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 

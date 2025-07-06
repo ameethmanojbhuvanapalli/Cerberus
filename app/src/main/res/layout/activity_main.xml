@@ -10,12 +10,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.example.cerberus.ui.ProtectionCardView
+        <com.example.cerberus.ui.card.ProtectionCardView
             android:id="@+id/protectionCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.example.cerberus.ui.HomeFeatureCardView
+        <com.example.cerberus.ui.card.HomeFeatureCardView
             android:id="@+id/appLockCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -30,7 +30,7 @@
             android:textSize="24sp"
             android:textStyle="bold"/>
 
-        <com.example.cerberus.ui.HomeFeatureCardView
+        <com.example.cerberus.ui.card.HomeFeatureCardView
             android:id="@+id/authSettingsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

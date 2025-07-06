@@ -7,12 +7,12 @@ import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.cerberus.auth.AuthenticatorType
+import com.example.cerberus.auth.authenticator.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
 import com.example.cerberus.data.ProtectionCache
-import com.example.cerberus.ui.AppListTabsActivity
-import com.example.cerberus.ui.AuthSettingsActivity
-import com.example.cerberus.ui.PermissionHelperFragment
+import com.example.cerberus.ui.activity.AppListTabsActivity
+import com.example.cerberus.ui.activity.AuthSettingsActivity
+import com.example.cerberus.ui.fragment.PermissionHelperFragment
 import com.example.cerberus.utils.PermissionsUtil
 import com.example.cerberus.databinding.ActivityMainBinding
 

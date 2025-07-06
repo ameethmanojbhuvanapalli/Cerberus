@@ -2,7 +2,7 @@ package com.example.cerberus.utils
 
 import android.content.Context
 import androidx.core.content.edit
-import com.example.cerberus.auth.AuthenticatorType
+import com.example.cerberus.auth.authenticator.AuthenticatorType
 
 object SharedPreferencesUtil {
 

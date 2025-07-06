@@ -1,4 +1,4 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.card
 
 import android.content.Context
 import android.util.AttributeSet

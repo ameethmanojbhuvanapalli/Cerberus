@@ -1,6 +1,7 @@
-package com.example.cerberus.auth
+package com.example.cerberus.auth.authenticator
 
 import android.content.Context
+import com.example.cerberus.auth.AuthenticationCallback
 
 interface Authenticator {
     /**

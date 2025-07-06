@@ -1,4 +1,4 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment
 import com.example.cerberus.R
 import com.example.cerberus.data.AppInfoCache
 import com.example.cerberus.data.LockedAppsCache
+import com.example.cerberus.ui.activity.AppListTabsActivity
+import com.example.cerberus.ui.adapter.AppListAdapter
 
 class AppListFragment : Fragment() {
 

@@ -1,4 +1,4 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.activity
 
 import android.content.Intent
 import android.os.Bundle

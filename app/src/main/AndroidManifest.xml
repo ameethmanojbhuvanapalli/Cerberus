@@ -23,14 +23,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.AppListTabsActivity"
+        <activity android:name=".ui.activity.AppListTabsActivity"
             android:exported="true" />
 
-        <activity android:name=".ui.AuthSettingsActivity"
+        <activity android:name=".ui.activity.AuthSettingsActivity"
             android:exported="true" />
 
         <activity
-            android:name=".ui.BiometricPromptActivity"
+            android:name=".ui.activity.BiometricPromptActivity"
             android:exported="false"
             android:launchMode="singleInstance"
             android:taskAffinity=""
@@ -38,21 +38,21 @@
             android:excludeFromRecents="true" />
 
         <activity
-            android:name=".ui.PinPromptActivity"
+            android:name=".ui.activity.PinPromptActivity"
             android:exported="false"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
         <activity
-            android:name=".ui.PatternPromptActivity"
+            android:name=".ui.activity.PatternPromptActivity"
             android:exported="false"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
         <activity
-            android:name=".ui.PasswordPromptActivity"
+            android:name=".ui.activity.PasswordPromptActivity"
             android:exported="false"
             android:launchMode="singleInstance"
             android:taskAffinity=""

@@ -1,10 +1,10 @@
-package com.example.cerberus.auth.impl
+package com.example.cerberus.auth.authenticator.impl
 
 import android.content.*
 import androidx.core.content.ContextCompat
-import com.example.cerberus.auth.Authenticator
+import com.example.cerberus.auth.authenticator.Authenticator
 import com.example.cerberus.auth.AuthenticationCallback
-import com.example.cerberus.ui.PasswordPromptActivity
+import com.example.cerberus.ui.activity.PasswordPromptActivity
 
 class PasswordAuthenticator : Authenticator {
     private val callbacks = mutableListOf<AuthenticationCallback>()

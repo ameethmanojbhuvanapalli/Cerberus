@@ -1,4 +1,4 @@
-package com.example.cerberus.auth.impl
+package com.example.cerberus.auth.authenticator.impl
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -6,9 +6,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.example.cerberus.auth.Authenticator
+import com.example.cerberus.auth.authenticator.Authenticator
 import com.example.cerberus.auth.AuthenticationCallback
-import com.example.cerberus.ui.PinPromptActivity
+import com.example.cerberus.ui.activity.PinPromptActivity
 
 class PinAuthenticator : Authenticator {
     private val callbacks = mutableListOf<AuthenticationCallback>()

@@ -1,4 +1,4 @@
-package com.example.cerberus.ui
+package com.example.cerberus.ui.fragment
 
 import android.app.Dialog
 import android.os.Bundle
