@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cerberus.auth.AuthenticatorType
 import com.example.cerberus.data.AuthenticatorTypeCache
+import com.example.cerberus.data.ProtectionCache
 import com.example.cerberus.ui.AppListTabsActivity
 import com.example.cerberus.ui.AuthSettingsActivity
 import com.example.cerberus.ui.PermissionHelperFragment
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             !PermissionsUtil.hasAccessibilityPermission(this)
         ) {
             showPermissionFragment()
+            ProtectionCache.setProtectionEnabled(this, false)
         } else {
             removePermissionFragmentIfPresent()
             viewModel.updateLockedAppsCount(this)
