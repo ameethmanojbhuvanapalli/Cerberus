@@ -45,13 +45,12 @@ class AppLockService : AccessibilityService() {
         // If we moved from a locked app to another app, update expiration
         if (lastPackageName != null && lastPackageName != foregroundPackage) {
             if (lockedApps.contains(lastPackageName)) {
-                authService?.updateExpirationForAppExit(lastPackageName!!)
+                authService.updateExpirationForAppExit(lastPackageName!!)
             }
         }
 
-        if (lockedApps.contains(foregroundPackage)
-            && (lastPackageName == null || lastPackageName != foregroundPackage)
-            && authService?.isAuthenticated(foregroundPackage) != true
+        if ((lockedApps.contains(foregroundPackage)
+                && (lastPackageName == null || lastPackageName != foregroundPackage)) && !authService.isAuthenticated(foregroundPackage)
         ) {
             activityChangeCount = 1
             stableSince = System.currentTimeMillis()
@@ -63,7 +62,7 @@ class AppLockService : AccessibilityService() {
                     && lastClassName == foregroundClass
                 ) {
                     Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    authService?.requestAuthenticationIfNeeded(foregroundPackage)
+                    authService.requestAuthenticationIfNeeded(foregroundPackage)
                 }
             }
             handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
@@ -79,7 +78,4 @@ class AppLockService : AccessibilityService() {
         return ProtectionCache.isProtectionEnabled(this)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }
