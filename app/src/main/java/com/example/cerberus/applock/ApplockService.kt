@@ -38,7 +38,12 @@ class AppLockService : AccessibilityService() {
         val foregroundPackage = event.packageName?.toString() ?: return
         val foregroundClass = event.className?.toString() ?: return
 
-        if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) return
+        // Don't prompt if prompt activity is being shown
+        if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
+            lastPackageName = foregroundPackage
+            lastClassName = foregroundClass
+            return
+        }
 
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
@@ -49,17 +54,22 @@ class AppLockService : AccessibilityService() {
             }
         }
 
-        if ((lockedApps.contains(foregroundPackage)
-                && (lastPackageName == null || lastPackageName != foregroundPackage)) && !authService.isAuthenticated(foregroundPackage)
+        if (
+            lockedApps.contains(foregroundPackage) &&
+            lastPackageName != null &&
+            lastPackageName != foregroundPackage &&
+            !authService.isAuthenticated(foregroundPackage)
         ) {
             activityChangeCount = 1
             stableSince = System.currentTimeMillis()
 
             stablePromptRunnable?.let { handler.removeCallbacks(it) }
             stablePromptRunnable = Runnable {
-                if (lockedApps.contains(foregroundPackage)
-                    && lastPackageName == foregroundPackage
-                    && lastClassName == foregroundClass
+                // Only prompt if still in the same package/class as when scheduled
+                if (
+                    lockedApps.contains(foregroundPackage) &&
+                    lastPackageName == foregroundPackage &&
+                    lastClassName == foregroundClass
                 ) {
                     Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
                     authService.requestAuthenticationIfNeeded(foregroundPackage)
@@ -77,5 +87,4 @@ class AppLockService : AccessibilityService() {
     private fun isProtectionEnabled(): Boolean {
         return ProtectionCache.isProtectionEnabled(this)
     }
-
 }
