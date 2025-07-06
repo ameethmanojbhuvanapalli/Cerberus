@@ -9,6 +9,11 @@ import com.example.cerberus.applock.AppLockService
 
 object PermissionsUtil {
 
+    fun hasAllRequiredPermissions(context: Context): Boolean {
+        return hasAccessibilityPermission(context)
+                && hasOverlayPermission(context)
+    }
+
     fun hasOverlayPermission(context: Context): Boolean =
         Settings.canDrawOverlays(context)
 
