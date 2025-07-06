@@ -1,15 +1,10 @@
 package com.example.cerberus.applock
 
 import android.accessibilityservice.AccessibilityService
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import androidx.core.content.ContextCompat
 import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.data.ProtectionCache
@@ -27,28 +22,12 @@ class AppLockService : AccessibilityService() {
     private var activityChangeCount: Int = 0
     private val STABLE_DELAY = 500L
 
-    private val stopReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "com.example.cerberus.STOP_APPLOCK") {
-                AuthenticationManager.getInstance(applicationContext).stopAuthService()
-            }
-        }
-    }
+    private val authService
+        get() = AuthenticationManager.getInstance(applicationContext).getAuthService()
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-
-        val filter = IntentFilter("com.example.cerberus.STOP_APPLOCK")
-        ContextCompat.registerReceiver(
-            this,
-            stopReceiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-
-        AuthenticationManager.getInstance(applicationContext).startAuthService()
-        AuthenticationManager.getInstance(applicationContext).getAuthService()?.cleanupExpiredEntries()
         Log.d(TAG, "Service connected")
     }
 
@@ -63,21 +42,19 @@ class AppLockService : AccessibilityService() {
 
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
+        // If we moved from a locked app to another app, update expiration
         if (lastPackageName != null && lastPackageName != foregroundPackage) {
             if (lockedApps.contains(lastPackageName)) {
-                AuthenticationManager.getInstance(applicationContext).getAuthService()
-                    ?.updateExpirationForAppExit(lastPackageName!!)
+                authService?.updateExpirationForAppExit(lastPackageName!!)
             }
         }
 
-        if (lockedApps.contains(foregroundPackage)) {
-            if (lastPackageName != foregroundPackage) {
-                activityChangeCount = 1
-                stableSince = System.currentTimeMillis()
-            } else if (lastClassName != foregroundClass) {
-                activityChangeCount++
-                stableSince = System.currentTimeMillis()
-            }
+        if (lockedApps.contains(foregroundPackage)
+            && (lastPackageName == null || lastPackageName != foregroundPackage)
+            && authService?.isAuthenticated(foregroundPackage) != true
+        ) {
+            activityChangeCount = 1
+            stableSince = System.currentTimeMillis()
 
             stablePromptRunnable?.let { handler.removeCallbacks(it) }
             stablePromptRunnable = Runnable {
@@ -86,8 +63,7 @@ class AppLockService : AccessibilityService() {
                     && lastClassName == foregroundClass
                 ) {
                     Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    AuthenticationManager.getInstance(applicationContext).getAuthService()
-                        ?.requestAuthenticationIfNeeded(foregroundPackage)
+                    authService?.requestAuthenticationIfNeeded(foregroundPackage)
                 }
             }
             handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
@@ -104,11 +80,6 @@ class AppLockService : AccessibilityService() {
     }
 
     override fun onDestroy() {
-        unregisterReceiver(stopReceiver)
-        lastPackageName?.let {
-            AuthenticationManager.getInstance(applicationContext).getAuthService()
-                ?.updateExpirationForAppExit(it)
-        }
         super.onDestroy()
     }
 }

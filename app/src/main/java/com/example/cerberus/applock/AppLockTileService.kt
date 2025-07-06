@@ -31,7 +31,6 @@ class AppLockTileService : TileService() {
             sendProtectionStateChangedBroadcast()
 
             if (PermissionsUtil.hasAccessibilityPermission(this)) {
-                sendBroadcast(Intent("com.example.cerberus.START_LOCK_SERVICE"))
                 Toast.makeText(this, "Protection Enabled", Toast.LENGTH_SHORT).show()
             } else {
                 val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
@@ -52,7 +51,6 @@ class AppLockTileService : TileService() {
             val callback = object : AuthenticationCallback {
                 override fun onAuthenticationSucceeded(packageName: String) {
                     setProtectionEnabled(false)
-                    sendBroadcast(Intent("com.example.cerberus.STOP_APPLOCK"))
                     Toast.makeText(applicationContext, "Protection Disabled", Toast.LENGTH_SHORT).show()
                     updateTileState()
                     sendProtectionStateChangedBroadcast()

@@ -75,7 +75,7 @@ class AuthSettingsActivity : AppCompatActivity() {
         binding.setIdleTimeoutButton.setOnClickListener {
             IdleTimeoutPickerFragment { newTimeout ->
                 IdleTimeoutCache.setIdleTimeout(this, newTimeout)
-                AuthenticationManager.getInstance(this).clearAuthenticatedApps()
+                AuthenticationManager.getInstance(this).setIdleTimeout(this, newTimeout)
                 Toast.makeText(this, "Timeout updated", Toast.LENGTH_SHORT).show()
             }.apply {
                 show(supportFragmentManager, "idle_timeout_picker")
@@ -86,7 +86,6 @@ class AuthSettingsActivity : AppCompatActivity() {
             selectedType?.let {
                 AuthenticatorTypeCache.setAuthenticatorType(this, it.type)
                 AuthenticationManager.getInstance(this).setAuthenticatorType(it.type)
-                AuthenticationManager.getInstance(this).clearAuthenticatedApps()
                 Toast.makeText(this, getString(R.string.saved), Toast.LENGTH_SHORT).show()
                 finish()
             }

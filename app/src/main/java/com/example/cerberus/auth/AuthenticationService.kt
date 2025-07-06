@@ -65,22 +65,14 @@ class AuthenticationService(
         }
     }
 
-    fun cleanupExpiredEntries() {
-        val currentTime = System.currentTimeMillis()
-        val iterator = authenticatedApps.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (entry.value != Long.MAX_VALUE && entry.value < currentTime) {
-                Log.d(TAG, "cleanupExpiredEntries: Removing expired entry for ${entry.key}")
-                iterator.remove()
-            }
-        }
+    fun clearAuthenticatedApps() {
+        authenticatedApps.clear()
     }
 
-    fun clearAuthenticatedApps() {
-        val currentApp = appContext.packageName
-        authenticatedApps.keys.removeIf { it != currentApp }
-        Log.d(TAG, "clearAuthenticatedApps: Cleared all except $currentApp")
+    fun isAuthenticated(packageName: String): Boolean {
+        val authTime = authenticatedApps[packageName]
+        val now = System.currentTimeMillis()
+        return authTime != null && now <= authTime
     }
 
     fun updateExpirationForAppExit(packageName: String) {
@@ -111,11 +103,7 @@ class AuthenticationService(
         authenticator.unregisterCallback(internalCallback)
         authenticator = newAuthenticator
         authenticator.registerCallback(internalCallback)
+        clearAuthenticatedApps()
         Log.d(TAG, "updateAuthenticator: Switched to ${newAuthenticator::class.java.simpleName}")
-    }
-
-    fun shutdown() {
-        authenticator.unregisterCallback(internalCallback)
-        Log.d(TAG, "shutdown: Unregistered internal callback")
     }
 }

@@ -52,8 +52,8 @@ class IdleTimeoutPickerFragment(
             val hours = hoursInput?.text?.toString()?.toIntOrNull()
             val minutes = minutesInput?.text?.toString()?.toIntOrNull()
 
-            if (hours == null || minutes == null || hours !in 0..23 || minutes !in 5..59) {
-                Toast.makeText(requireContext(), "Enter valid hours (0–23) and minutes (5–59)", Toast.LENGTH_SHORT).show()
+            if (hours == null || minutes == null || hours !in 0..23 || minutes !in 0..59) {
+                Toast.makeText(requireContext(), "Enter valid hours (0–23) and minutes (0–59)", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
