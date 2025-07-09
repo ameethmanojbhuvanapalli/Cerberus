@@ -5,7 +5,9 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.example.cerberus.auth.AuthenticationCallback
 import com.example.cerberus.auth.AuthenticationManager
+import com.example.cerberus.auth.AuthChannel
 import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.data.ProtectionCache
 
@@ -72,7 +74,18 @@ class AppLockService : AccessibilityService() {
                     lastClassName == foregroundClass
                 ) {
                     Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    authService.requestAuthenticationIfNeeded(foregroundPackage)
+                    authService.requestAuthenticationIfNeeded(
+                        AuthChannel.APPLOCK,
+                        foregroundPackage,
+                        object : AuthenticationCallback {
+                            override fun onAuthenticationSucceeded(packageName: String) {
+                                // No-op: handled by AppLockService UI/UX
+                            }
+                            override fun onAuthenticationFailed(packageName: String) {
+                                // No-op: handled by AppLockService UI/UX
+                            }
+                        }
+                    )
                 }
             }
             handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)

@@ -12,58 +12,64 @@ class AuthenticationService(
 ) {
     private val appContext = context.applicationContext
     private val authenticatedApps = ConcurrentHashMap<String, Long>()
-    private val callbacks = mutableListOf<AuthenticationCallback>()
+    private val pendingCallbacks = mutableMapOf<AuthChannel, PendingRequest>()
     private val TAG = "AuthenticationService"
-
-    private val internalCallback: AuthenticationCallback
 
     private val IDLE_TIMEOUT_MS get() = IdleTimeoutCache.getIdleTimeout(appContext)
 
-    init {
-        Log.d(TAG, "Initializing AuthenticationService")
-        internalCallback = object : AuthenticationCallback {
-            override fun onAuthenticationSucceeded(packageName: String) {
-                Log.d(TAG, "internalCallback: onAuthenticationSucceeded for $packageName")
-                handleAuthenticationSuccess(packageName)
-            }
+    private data class PendingRequest(val packageName: String, val callback: AuthenticationCallback)
 
-            override fun onAuthenticationFailed(packageName: String) {
-                Log.d(TAG, "internalCallback: onAuthenticationFailed for $packageName")
-                handleAuthenticationFailure(packageName)
+    private val internalCallback: AuthenticationCallback = object : AuthenticationCallback {
+        override fun onAuthenticationSucceeded(packageName: String) {
+            Log.d(TAG, "internalCallback: onAuthenticationSucceeded for $packageName")
+            authenticatedApps[packageName] = Long.MAX_VALUE
+            // Notify all channels waiting for this package
+            val channelsToClear = mutableListOf<AuthChannel>()
+            for ((channel, request) in pendingCallbacks) {
+                if (request.packageName == packageName) {
+                    request.callback.onAuthenticationSucceeded(packageName)
+                    channelsToClear.add(channel)
+                }
             }
+            channelsToClear.forEach { pendingCallbacks.remove(it) }
         }
 
+        override fun onAuthenticationFailed(packageName: String) {
+            Log.d(TAG, "internalCallback: onAuthenticationFailed for $packageName")
+            authenticatedApps.remove(packageName)
+            // Notify all channels waiting for this package
+            val channelsToClear = mutableListOf<AuthChannel>()
+            for ((channel, request) in pendingCallbacks) {
+                if (request.packageName == packageName) {
+                    request.callback.onAuthenticationFailed(packageName)
+                    channelsToClear.add(channel)
+                }
+            }
+            channelsToClear.forEach { pendingCallbacks.remove(it) }
+        }
+    }
+
+    init {
         authenticator.registerCallback(internalCallback)
     }
 
-    fun requestAuthenticationIfNeeded(packageName: String): Boolean {
+    fun requestAuthenticationIfNeeded(
+        channel: AuthChannel,
+        packageName: String,
+        callback: AuthenticationCallback
+    ): Boolean {
         val authTime = authenticatedApps[packageName]
         val now = System.currentTimeMillis()
         if (authTime != null && now <= authTime) {
-            Log.d(TAG, "requestAuthenticationIfNeeded: Skipping $packageName, already authenticated")
-            authenticatedApps[packageName] = Long.MAX_VALUE
+            Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Skipping $packageName, already authenticated")
+            callback.onAuthenticationSucceeded(packageName)
             return false
         }
-
-        Log.d(TAG, "requestAuthenticationIfNeeded: Triggering authentication for $packageName")
+        Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Triggering authentication for $packageName")
+        // Replace any old pending request for this channel
+        pendingCallbacks[channel] = PendingRequest(packageName, callback)
         authenticator.authenticate(appContext, packageName)
         return true
-    }
-
-    fun registerCallback(callback: AuthenticationCallback) {
-        synchronized(callbacks) {
-            if (!callbacks.contains(callback)) {
-                callbacks.add(callback)
-                Log.d(TAG, "registerCallback: Added new callback, total = ${callbacks.size}")
-            }
-        }
-    }
-
-    fun unregisterCallback(callback: AuthenticationCallback) {
-        synchronized(callbacks) {
-            callbacks.remove(callback)
-            Log.d(TAG, "unregisterCallback: Removed callback, total = ${callbacks.size}")
-        }
     }
 
     fun clearAuthenticatedApps() {
@@ -83,20 +89,6 @@ class AuthenticationService(
                 Log.d(TAG, "updateExpirationForAppExit: Setting idle timeout for $packageName until $newExpiration")
                 authenticatedApps[packageName] = newExpiration
             }
-        }
-    }
-
-    private fun handleAuthenticationSuccess(packageName: String) {
-        authenticatedApps[packageName] = Long.MAX_VALUE
-        synchronized(callbacks) {
-            callbacks.forEach { it.onAuthenticationSucceeded(packageName) }
-        }
-    }
-
-    private fun handleAuthenticationFailure(packageName: String) {
-        authenticatedApps.remove(packageName)
-        synchronized(callbacks) {
-            callbacks.forEach { it.onAuthenticationFailed(packageName) }
         }
     }
 

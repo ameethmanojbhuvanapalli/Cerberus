@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.example.cerberus.R
 import com.example.cerberus.auth.AuthenticationCallback
 import com.example.cerberus.auth.AuthenticationManager
+import com.example.cerberus.auth.AuthChannel
 import com.example.cerberus.data.ProtectionCache
 import com.example.cerberus.utils.PermissionsUtil
 
@@ -53,18 +54,18 @@ class AppLockTileService : TileService() {
                     Toast.makeText(applicationContext, "Protection Disabled", Toast.LENGTH_SHORT).show()
                     updateTileState()
                     sendProtectionStateChangedBroadcast()
-                    authService.unregisterCallback(this)
                 }
 
                 override fun onAuthenticationFailed(packageName: String) {
                     Toast.makeText(applicationContext, "Authentication Failed", Toast.LENGTH_SHORT).show()
-                    authService.unregisterCallback(this)
                 }
             }
 
-            authService.registerCallback(callback)
-
-            val requested = authService.requestAuthenticationIfNeeded(applicationContext.packageName)
+            val requested = authService.requestAuthenticationIfNeeded(
+                AuthChannel.TILE,
+                applicationContext.packageName,
+                callback
+            )
 
             if (!requested) {
                 callback.onAuthenticationSucceeded(applicationContext.packageName)
