@@ -80,8 +80,6 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".applock.AppLockServiceControlReceiver" />
-
     </application>
 
     <queries>
