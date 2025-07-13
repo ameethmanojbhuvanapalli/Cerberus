@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
                 AuthenticatorType.PASSWORD -> getString(R.string.password)
             }
             binding.authSettingsCard.setPillText(getString(R.string.auth_enabled_text, typeName))
+            binding.protectionCard.updateProtectionState()
         }
     }
 
