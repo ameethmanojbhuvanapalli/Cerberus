@@ -17,6 +17,7 @@ class AppLockService : AccessibilityService() {
     private val TAG = "AppLockService"
     private lateinit var myPackageName: String
     private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
+    private val systemPackages = setOf("com.android.systemui", "android", null)
 
     private val handler = Handler(Looper.getMainLooper())
     private var stablePromptRunnable: Runnable? = null
@@ -40,6 +41,8 @@ class AppLockService : AccessibilityService() {
         val foregroundPackage = event.packageName?.toString() ?: return
         val foregroundClass = event.className?.toString() ?: return
 
+        if (systemPackages.contains(foregroundPackage)) return
+
         // Don't prompt if prompt activity is being shown
         if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
             lastPackageName = foregroundPackage
@@ -50,10 +53,12 @@ class AppLockService : AccessibilityService() {
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
         // If we moved from a locked app to another app, update expiration
-        if (lastPackageName != null && lastPackageName != foregroundPackage) {
-            if (lockedApps.contains(lastPackageName)) {
-                authService.updateExpirationForAppExit(lastPackageName!!)
-            }
+        if (
+            lastPackageName != null &&
+            lastPackageName != foregroundPackage &&
+            lockedApps.contains(lastPackageName)
+        ) {
+            authService.updateExpirationForAppExit(lastPackageName!!)
         }
 
         if (
