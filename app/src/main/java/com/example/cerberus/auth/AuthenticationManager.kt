@@ -64,4 +64,9 @@ class AuthenticationManager private constructor(context: Context) {
     }
 
     fun getAuthService(): AuthenticationService = _authService
+
+    fun shutdown() {
+        _authService.shutdown()
+         instance = null
+    }
 }

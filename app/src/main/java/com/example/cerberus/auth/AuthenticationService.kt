@@ -99,4 +99,11 @@ class AuthenticationService(
         clearAuthenticatedApps()
         Log.d(TAG, "updateAuthenticator: Switched to ${newAuthenticator::class.java.simpleName}")
     }
+
+    fun shutdown() {
+        clearAuthenticatedApps()
+        pendingCallbacks.clear()
+        authenticator.unregisterCallback(internalCallback)
+        Log.d(TAG, "AuthenticationService: shutdown completed")
+    }
 }
