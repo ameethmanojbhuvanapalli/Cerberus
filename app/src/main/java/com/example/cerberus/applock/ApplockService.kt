@@ -25,6 +25,11 @@ class AppLockService : AccessibilityService() {
     private var activityChangeCount: Int = 0
     private val STABLE_DELAY = 500L
 
+    // Debounce for app exit
+    private var appExitRunnable: Runnable? = null
+    private val APP_EXIT_DELAY = 1500L // ms (tweak as needed)
+    private var pendingAppExitPackage: String? = null
+
     private val authService
         get() = AuthenticationManager.getInstance(applicationContext).getAuthService()
 
@@ -52,15 +57,30 @@ class AppLockService : AccessibilityService() {
 
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
-        // If we moved from a locked app to another app, update expiration
+        // Debounced expiration update logic
         if (
             lastPackageName != null &&
             lastPackageName != foregroundPackage &&
             lockedApps.contains(lastPackageName)
         ) {
-            authService.updateExpirationForAppExit(lastPackageName!!)
+            // User appears to have left a locked app
+            pendingAppExitPackage = lastPackageName
+            // Cancel any previous pending exit
+            appExitRunnable?.let { handler.removeCallbacks(it) }
+            appExitRunnable = Runnable {
+                // Only update expiration if user did NOT return to the locked app
+                if (pendingAppExitPackage != foregroundPackage) {
+                    Log.d(TAG, "Updating expiration for: $pendingAppExitPackage")
+                    authService.updateExpirationForAppExit(pendingAppExitPackage!!)
+                } else {
+                    Log.d(TAG, "Debounced: User returned to locked app, not updating expiration")
+                }
+                pendingAppExitPackage = null
+            }
+            handler.postDelayed(appExitRunnable!!, APP_EXIT_DELAY)
         }
 
+        // Prompt logic (unchanged)
         if (
             lockedApps.contains(foregroundPackage) &&
             lastPackageName != null &&
