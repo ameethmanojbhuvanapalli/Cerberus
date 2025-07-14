@@ -62,6 +62,7 @@ class AuthenticationService(
         val now = System.currentTimeMillis()
         if (authTime != null && now <= authTime) {
             Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Skipping $packageName, already authenticated")
+            authenticatedApps[packageName] = Long.MAX_VALUE
             callback.onAuthenticationSucceeded(packageName)
             return false
         }
