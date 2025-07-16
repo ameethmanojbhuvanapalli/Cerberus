@@ -56,6 +56,82 @@ class SystemPackageFilterTest {
     }
 
     @Test
+    fun testMotorolaSystemPackages() {
+        assertTrue("Should detect Motorola launcher", SystemPackageFilter.isSystemPackage("com.motorola.launcher3"))
+        assertTrue("Should detect Motorola actions", SystemPackageFilter.isSystemPackage("com.motorola.actions"))
+        assertTrue("Should detect Motorola display", SystemPackageFilter.isSystemPackage("com.motorola.display"))
+        assertTrue("Should detect Motorola camera", SystemPackageFilter.isSystemPackage("com.motorola.camera"))
+    }
+
+    @Test
+    fun testHuaweiSystemPackages() {
+        assertTrue("Should detect Huawei launcher", SystemPackageFilter.isSystemPackage("com.huawei.android.launcher"))
+        assertTrue("Should detect Huawei systemui", SystemPackageFilter.isSystemPackage("com.huawei.systemui"))
+        assertTrue("Should detect Honor launcher", SystemPackageFilter.isSystemPackage("com.hihonor.android.launcher"))
+        assertTrue("Should detect Huawei intelligent", SystemPackageFilter.isSystemPackage("com.huawei.intelligent"))
+    }
+
+    @Test
+    fun testRealmeSystemPackages() {
+        assertTrue("Should detect Realme launcher", SystemPackageFilter.isSystemPackage("com.realme.launcher"))
+        assertTrue("Should detect Realme setup", SystemPackageFilter.isSystemPackage("com.realme.setupwizard"))
+        assertTrue("Should detect Realme safe", SystemPackageFilter.isSystemPackage("com.realme.safe"))
+    }
+
+    @Test
+    fun testNothingSystemPackages() {
+        assertTrue("Should detect Nothing launcher", SystemPackageFilter.isSystemPackage("com.nothing.launcher"))
+        assertTrue("Should detect Nothing systemui", SystemPackageFilter.isSystemPackage("com.nothing.systemui"))
+        assertTrue("Should detect Nothing ketchum", SystemPackageFilter.isSystemPackage("com.nothing.ketchum"))
+    }
+
+    @Test
+    fun testNokiaSystemPackages() {
+        assertTrue("Should detect Nokia launcher", SystemPackageFilter.isSystemPackage("com.hmdglobal.launcher3"))
+        assertTrue("Should detect Nokia setup", SystemPackageFilter.isSystemPackage("com.hmdglobal.setup"))
+        assertTrue("Should detect Nokia camera", SystemPackageFilter.isSystemPackage("com.hmdglobal.camera"))
+    }
+
+    @Test
+    fun testSonySystemPackages() {
+        assertTrue("Should detect Sony launcher", SystemPackageFilter.isSystemPackage("com.sonymobile.launcher"))
+        assertTrue("Should detect Sony Xperia lounge", SystemPackageFilter.isSystemPackage("com.sonymobile.xperialounge"))
+        assertTrue("Should detect Sony assist", SystemPackageFilter.isSystemPackage("com.sonymobile.assist"))
+    }
+
+    @Test
+    fun testLgSystemPackages() {
+        assertTrue("Should detect LG launcher2", SystemPackageFilter.isSystemPackage("com.lge.launcher2"))
+        assertTrue("Should detect LG launcher3", SystemPackageFilter.isSystemPackage("com.lge.launcher3"))
+        assertTrue("Should detect LG systemui", SystemPackageFilter.isSystemPackage("com.lge.systemui"))
+    }
+
+    @Test
+    fun testHtcSystemPackages() {
+        assertTrue("Should detect HTC launcher", SystemPackageFilter.isSystemPackage("com.htc.launcher"))
+        assertTrue("Should detect HTC Sense launcher", SystemPackageFilter.isSystemPackage("com.htc.sense.launcher"))
+        assertTrue("Should detect HTC camera", SystemPackageFilter.isSystemPackage("com.htc.camera"))
+    }
+
+    @Test
+    fun testMiscOemSystemPackages() {
+        // Asus
+        assertTrue("Should detect Asus launcher", SystemPackageFilter.isSystemPackage("com.asus.launcher"))
+        assertTrue("Should detect Asus ZenUI", SystemPackageFilter.isSystemPackage("com.asus.zenui"))
+        
+        // Tecno
+        assertTrue("Should detect Tecno launcher", SystemPackageFilter.isSystemPackage("com.transsion.launcher"))
+        assertTrue("Should detect Tecno systemui", SystemPackageFilter.isSystemPackage("com.transsion.systemui"))
+        
+        // Infinix
+        assertTrue("Should detect Infinix launcher", SystemPackageFilter.isSystemPackage("com.infinix.launcher"))
+        
+        // Meizu
+        assertTrue("Should detect Meizu launcher", SystemPackageFilter.isSystemPackage("com.meizu.flyme.launcher"))
+        assertTrue("Should detect Meizu gallery", SystemPackageFilter.isSystemPackage("com.meizu.media.gallery"))
+    }
+
+    @Test
     fun testGestureAnimationPackages() {
         assertTrue("Should detect gesture navigation", SystemPackageFilter.isGestureAnimation("gesture_navigation"))
         assertTrue("Should detect launcher transition", SystemPackageFilter.isGestureAnimation("launcher_transition"))
@@ -78,6 +154,20 @@ class SystemPackageFilterTest {
         assertTrue("Should detect google android subpackage", SystemPackageFilter.isSystemPackage("com.google.android.gms.auth"))
         assertTrue("Should detect samsung android subpackage", SystemPackageFilter.isSystemPackage("com.samsung.android.app.notes"))
         assertTrue("Should detect miui subpackage", SystemPackageFilter.isSystemPackage("com.miui.powerkeeper"))
+        
+        // Test new manufacturer patterns
+        assertTrue("Should detect motorola subpackage", SystemPackageFilter.isSystemPackage("com.motorola.launcher.test"))
+        assertTrue("Should detect huawei subpackage", SystemPackageFilter.isSystemPackage("com.huawei.android.test"))
+        assertTrue("Should detect honor subpackage", SystemPackageFilter.isSystemPackage("com.hihonor.android.test"))
+        assertTrue("Should detect realme subpackage", SystemPackageFilter.isSystemPackage("com.realme.test.app"))
+        assertTrue("Should detect nothing subpackage", SystemPackageFilter.isSystemPackage("com.nothing.test.service"))
+        assertTrue("Should detect hmd subpackage", SystemPackageFilter.isSystemPackage("com.hmdglobal.test.app"))
+        assertTrue("Should detect sony subpackage", SystemPackageFilter.isSystemPackage("com.sonymobile.test.service"))
+        assertTrue("Should detect lge subpackage", SystemPackageFilter.isSystemPackage("com.lge.test.launcher"))
+        assertTrue("Should detect htc subpackage", SystemPackageFilter.isSystemPackage("com.htc.test.sense"))
+        assertTrue("Should detect asus subpackage", SystemPackageFilter.isSystemPackage("com.asus.test.zen"))
+        assertTrue("Should detect transsion subpackage", SystemPackageFilter.isSystemPackage("com.transsion.test.hios"))
+        assertTrue("Should detect meizu subpackage", SystemPackageFilter.isSystemPackage("com.meizu.test.flyme"))
     }
 
     @Test
