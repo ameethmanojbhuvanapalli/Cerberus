@@ -20,14 +20,10 @@ class AppLockService : AccessibilityService() {
     private val systemPackages = setOf("com.android.systemui", "android", null)
 
     private val handler = Handler(Looper.getMainLooper())
-    private var stablePromptRunnable: Runnable? = null
-    private var stableSince: Long = 0L
-    private var activityChangeCount: Int = 0
-    private val STABLE_DELAY = 500L
-
-    // Debounce for app exit
+    
+    // Simplified app exit detection - no more complex debouncing
     private var appExitRunnable: Runnable? = null
-    private val APP_EXIT_DELAY = 1500L // ms (tweak as needed)
+    private val APP_EXIT_DELAY = 1000L // Reduced delay for cleaner detection
     private var pendingAppExitPackage: String? = null
 
     private val authService
@@ -48,7 +44,7 @@ class AppLockService : AccessibilityService() {
 
         if (systemPackages.contains(foregroundPackage)) return
 
-        // Don't prompt if prompt activity is being shown
+        // Don't process if prompt activity is being shown
         if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
             lastPackageName = foregroundPackage
             lastClassName = foregroundClass
@@ -57,67 +53,68 @@ class AppLockService : AccessibilityService() {
 
         val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
 
-        // Debounced expiration update logic
-        if (
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            lockedApps.contains(lastPackageName)
-        ) {
-            // User appears to have left a locked app
-            pendingAppExitPackage = lastPackageName
-            // Cancel any previous pending exit
-            appExitRunnable?.let { handler.removeCallbacks(it) }
-            appExitRunnable = Runnable {
-                // Only update expiration if user did NOT return to the locked app
-                if (pendingAppExitPackage != foregroundPackage) {
-                    Log.d(TAG, "Updating expiration for: $pendingAppExitPackage")
-                    authService.updateExpirationForAppExit(pendingAppExitPackage!!)
-                } else {
-                    Log.d(TAG, "Debounced: User returned to locked app, not updating expiration")
-                }
-                pendingAppExitPackage = null
-            }
-            handler.postDelayed(appExitRunnable!!, APP_EXIT_DELAY)
-        }
+        // Handle app exit - simplified logic using state machine
+        handleAppExit(lockedApps, foregroundPackage)
 
-        // Prompt logic (unchanged)
-        if (
-            lockedApps.contains(foregroundPackage) &&
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            !authService.isAuthenticated(foregroundPackage)
-        ) {
-            activityChangeCount = 1
-            stableSince = System.currentTimeMillis()
-
-            stablePromptRunnable?.let { handler.removeCallbacks(it) }
-            stablePromptRunnable = Runnable {
-                // Only prompt if still in the same package/class as when scheduled
-                if (
-                    lockedApps.contains(foregroundPackage) &&
-                    lastPackageName == foregroundPackage &&
-                    lastClassName == foregroundClass
-                ) {
-                    Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    authService.requestAuthenticationIfNeeded(
-                        AuthChannel.APPLOCK,
-                        foregroundPackage,
-                        object : AuthenticationCallback {
-                            override fun onAuthenticationSucceeded(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
-                            }
-                            override fun onAuthenticationFailed(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
-                            }
-                        }
-                    )
-                }
-            }
-            handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
-        }
+        // Handle authentication prompting - simplified logic
+        handleAuthenticationPrompt(lockedApps, foregroundPackage)
 
         lastPackageName = foregroundPackage
         lastClassName = foregroundClass
+    }
+    
+    private fun handleAppExit(lockedApps: Set<String>, foregroundPackage: String) {
+        if (lastPackageName != null && 
+            lastPackageName != foregroundPackage && 
+            lockedApps.contains(lastPackageName)) {
+            
+            // User appears to have left a locked app
+            pendingAppExitPackage = lastPackageName
+            
+            // Cancel any previous pending exit
+            appExitRunnable?.let { handler.removeCallbacks(it) }
+            
+            appExitRunnable = Runnable {
+                // Only update expiration if user did NOT return to the locked app
+                if (pendingAppExitPackage != foregroundPackage) {
+                    Log.d(TAG, "True app exit detected for: $pendingAppExitPackage")
+                    authService.updateExpirationForAppExit(pendingAppExitPackage!!)
+                } else {
+                    Log.d(TAG, "User returned to locked app, not updating expiration")
+                }
+                pendingAppExitPackage = null
+            }
+            
+            handler.postDelayed(appExitRunnable!!, APP_EXIT_DELAY)
+        }
+    }
+    
+    private fun handleAuthenticationPrompt(lockedApps: Set<String>, foregroundPackage: String) {
+        // Check if we should prompt for this package
+        if (lockedApps.contains(foregroundPackage) && 
+            lastPackageName != null &&
+            lastPackageName != foregroundPackage &&
+            !authService.isAuthenticated(foregroundPackage)) {
+            
+            Log.d(TAG, "Requesting authentication for: $foregroundPackage")
+            
+            // Use state machine-based authentication request
+            authService.requestAuthenticationIfNeeded(
+                AuthChannel.APPLOCK,
+                foregroundPackage,
+                object : AuthenticationCallback {
+                    override fun onAuthenticationSucceeded(packageName: String) {
+                        Log.d(TAG, "Authentication succeeded for: $packageName")
+                        // No additional action needed - handled by service
+                    }
+                    
+                    override fun onAuthenticationFailed(packageName: String) {
+                        Log.d(TAG, "Authentication failed for: $packageName")
+                        // No additional action needed - handled by service
+                    }
+                }
+            )
+        }
     }
 
     override fun onInterrupt() {}

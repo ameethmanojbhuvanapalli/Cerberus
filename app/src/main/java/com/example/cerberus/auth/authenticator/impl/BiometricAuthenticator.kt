@@ -36,6 +36,10 @@ class BiometricAuthenticator : Authenticator {
                         Log.d(TAG, "Auth failure broadcast received")
                         notifyAuthenticationFailed()
                     }
+                    "com.example.cerberus.AUTH_PROMPT_FINISHED" -> {
+                        Log.d(TAG, "Auth prompt finished broadcast received")
+                        notifyPromptDestroyed(ctx)
+                    }
                 }
             }
         }
@@ -43,6 +47,7 @@ class BiometricAuthenticator : Authenticator {
         val filter = IntentFilter().apply {
             addAction("com.example.cerberus.AUTH_SUCCESS")
             addAction("com.example.cerberus.AUTH_FAILURE")
+            addAction("com.example.cerberus.AUTH_PROMPT_FINISHED")
         }
 
         ContextCompat.registerReceiver(
@@ -82,6 +87,21 @@ class BiometricAuthenticator : Authenticator {
         lastPackageName?.let { packageName ->
             Log.d(TAG, "Notifying ${callbacks.size} callbacks of failure for: $packageName")
             callbacks.forEach { it.onAuthenticationFailed(packageName) }
+        }
+    }
+
+    private fun notifyPromptDestroyed(context: Context?) {
+        lastPackageName?.let { packageName ->
+            Log.d(TAG, "Prompt destroyed for: $packageName")
+            context?.let {
+                // Get the AuthenticationService and notify prompt destroyed
+                try {
+                    val authManager = com.example.cerberus.auth.AuthenticationManager.getInstance(it)
+                    authManager.getAuthService().notifyPromptDestroyed(packageName)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error notifying prompt destroyed", e)
+                }
+            }
         }
     }
 

@@ -26,6 +26,7 @@ class PinAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_PROMPT_FINISHED")
             }
             ContextCompat.registerReceiver(
                 context,
@@ -57,6 +58,7 @@ class PinAuthenticator : Authenticator {
             when (action) {
                 "com.example.cerberus.AUTH_SUCCESS" -> notifyAuthenticationSucceeded()
                 "com.example.cerberus.AUTH_FAILURE" -> notifyAuthenticationFailed()
+                "com.example.cerberus.AUTH_PROMPT_FINISHED" -> notifyPromptDestroyed(context)
             }
             // Unregister after handling
             try {
@@ -72,5 +74,17 @@ class PinAuthenticator : Authenticator {
 
     fun notifyAuthenticationFailed() {
         lastPackageName?.let { pkg -> callbacks.forEach { it.onAuthenticationFailed(pkg) } }
+    }
+
+    private fun notifyPromptDestroyed(context: Context) {
+        lastPackageName?.let { packageName ->
+            Log.d(TAG, "Prompt destroyed for: $packageName")
+            try {
+                val authManager = com.example.cerberus.auth.AuthenticationManager.getInstance(context)
+                authManager.getAuthService().notifyPromptDestroyed(packageName)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error notifying prompt destroyed", e)
+            }
+        }
     }
 }

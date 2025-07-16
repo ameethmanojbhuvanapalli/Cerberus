@@ -11,7 +11,7 @@ class AuthenticationService(
     private var authenticator: Authenticator
 ) {
     private val appContext = context.applicationContext
-    private val authenticatedApps = ConcurrentHashMap<String, Long>()
+    private val stateMachine = AuthenticationStateMachine()
     private val pendingCallbacks = mutableMapOf<AuthChannel, PendingRequest>()
     private val TAG = "AuthenticationService"
 
@@ -22,7 +22,10 @@ class AuthenticationService(
     private val internalCallback: AuthenticationCallback = object : AuthenticationCallback {
         override fun onAuthenticationSucceeded(packageName: String) {
             Log.d(TAG, "internalCallback: onAuthenticationSucceeded for $packageName")
-            authenticatedApps[packageName] = Long.MAX_VALUE
+            
+            // Update state machine
+            stateMachine.processEvent(AuthenticationStateMachine.Event.AuthenticationSucceeded(packageName))
+            
             // Notify all channels waiting for this package
             val channelsToClear = mutableListOf<AuthChannel>()
             for ((channel, request) in pendingCallbacks) {
@@ -36,21 +39,22 @@ class AuthenticationService(
 
         override fun onAuthenticationFailed(packageName: String) {
             Log.d(TAG, "internalCallback: onAuthenticationFailed for $packageName")
-            authenticatedApps.remove(packageName)
-            // Notify all channels waiting for this package
-            val channelsToClear = mutableListOf<AuthChannel>()
-            for ((channel, request) in pendingCallbacks) {
-                if (request.packageName == packageName) {
-                    request.callback.onAuthenticationFailed(packageName)
-                    channelsToClear.add(channel)
-                }
-            }
-            channelsToClear.forEach { pendingCallbacks.remove(it) }
+            
+            // Update state machine - this keeps the prompt active for retries
+            stateMachine.processEvent(AuthenticationStateMachine.Event.AuthenticationFailed(packageName))
+            
+            // Don't notify channels of failure yet - let prompt retry internally
+            // Only notify on prompt destruction
         }
     }
 
     init {
         authenticator.registerCallback(internalCallback)
+        
+        // Listen for state machine transitions
+        stateMachine.addStateChangeListener { packageName, oldState, newState ->
+            Log.d(TAG, "State transition for $packageName: $oldState → $newState")
+        }
     }
 
     fun requestAuthenticationIfNeeded(
@@ -58,38 +62,49 @@ class AuthenticationService(
         packageName: String,
         callback: AuthenticationCallback
     ): Boolean {
-        val authTime = authenticatedApps[packageName]
-        val now = System.currentTimeMillis()
-        if (authTime != null && now <= authTime) {
+        // Check if already authenticated using state machine
+        if (stateMachine.isAuthenticated(packageName, IDLE_TIMEOUT_MS)) {
             Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Skipping $packageName, already authenticated")
-            authenticatedApps[packageName] = Long.MAX_VALUE
             callback.onAuthenticationSucceeded(packageName)
             return false
         }
+        
+        // Check if prompt is already active
+        if (stateMachine.isPromptActive(packageName)) {
+            Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Prompt already active for $packageName")
+            // Replace any old pending request for this channel
+            pendingCallbacks[channel] = PendingRequest(packageName, callback)
+            return true // Prompt is active but not started by this call
+        }
+        
         Log.d(TAG, "requestAuthenticationIfNeeded: $channel: Triggering authentication for $packageName")
+        
         // Replace any old pending request for this channel
         pendingCallbacks[channel] = PendingRequest(packageName, callback)
+        
+        // Update state machine to PROMPTING
+        stateMachine.processEvent(AuthenticationStateMachine.Event.PromptRequested(packageName))
+        
+        // Start authentication
         authenticator.authenticate(appContext, packageName)
         return true
     }
 
     fun clearAuthenticatedApps() {
-        authenticatedApps.clear()
+        stateMachine.clearAllStates()
     }
 
     fun isAuthenticated(packageName: String): Boolean {
-        val authTime = authenticatedApps[packageName]
-        val now = System.currentTimeMillis()
-        return authTime != null && now <= authTime
+        return stateMachine.isAuthenticated(packageName, IDLE_TIMEOUT_MS)
     }
 
     fun updateExpirationForAppExit(packageName: String) {
-        authenticatedApps[packageName]?.let {
-            if (it == Long.MAX_VALUE) {
-                val newExpiration = System.currentTimeMillis() + IDLE_TIMEOUT_MS
-                Log.d(TAG, "updateExpirationForAppExit: Setting idle timeout for $packageName until $newExpiration")
-                authenticatedApps[packageName] = newExpiration
-            }
+        // Only update timeout if currently authenticated
+        if (stateMachine.getCurrentState(packageName) == AuthenticationStateMachine.State.AUTHENTICATED) {
+            Log.d(TAG, "updateExpirationForAppExit: Setting idle timeout for $packageName")
+            stateMachine.setAuthenticationTimeout(packageName, IDLE_TIMEOUT_MS)
+            // Transition to UNAUTHENTICATED
+            stateMachine.processEvent(AuthenticationStateMachine.Event.AppExited(packageName))
         }
     }
 
@@ -106,5 +121,25 @@ class AuthenticationService(
         pendingCallbacks.clear()
         authenticator.unregisterCallback(internalCallback)
         Log.d(TAG, "AuthenticationService: shutdown completed")
+    }
+    
+    /**
+     * Notify that a prompt was destroyed (called when prompt activity finishes)
+     */
+    fun notifyPromptDestroyed(packageName: String) {
+        Log.d(TAG, "notifyPromptDestroyed for $packageName")
+        
+        // Update state machine
+        stateMachine.processEvent(AuthenticationStateMachine.Event.PromptDestroyed(packageName))
+        
+        // Notify all channels waiting for this package about failure
+        val channelsToClear = mutableListOf<AuthChannel>()
+        for ((channel, request) in pendingCallbacks) {
+            if (request.packageName == packageName) {
+                request.callback.onAuthenticationFailed(packageName)
+                channelsToClear.add(channel)
+            }
+        }
+        channelsToClear.forEach { pendingCallbacks.remove(it) }
     }
 }

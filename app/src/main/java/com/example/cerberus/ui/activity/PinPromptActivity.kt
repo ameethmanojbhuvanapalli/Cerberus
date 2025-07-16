@@ -10,13 +10,14 @@ import com.example.cerberus.utils.HashUtil
 
 class PinPromptActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPinPromptBinding
+    private var packageNameToAuth: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPinPromptBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val packageName = intent.getStringExtra("packageName")
+        packageNameToAuth = intent.getStringExtra("packageName")
 
         binding.confirmButton.setOnClickListener {
             val pin = binding.pinInput.text.toString()
@@ -30,5 +31,13 @@ class PinPromptActivity : AppCompatActivity() {
                 binding.pinInput.text?.clear()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Send prompt finished broadcast
+        val intent = Intent("com.example.cerberus.AUTH_PROMPT_FINISHED")
+        intent.putExtra("packageName", packageNameToAuth)
+        sendBroadcast(intent)
     }
 }
