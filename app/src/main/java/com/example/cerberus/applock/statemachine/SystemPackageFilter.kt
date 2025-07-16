@@ -119,7 +119,7 @@ object SystemPackageFilter {
     /**
      * All system packages combined for efficient lookup
      */
-    private val allSystemPackages: Set<String> by lazy {
+    private val allSystemPackages: Set<String?> by lazy {
         androidSystemPackages + samsungSystemPackages + xiaomiSystemPackages +
         oppoSystemPackages + onePlusSystemPackages + vivoSystemPackages +
         gestureAnimationPackages
