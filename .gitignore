@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Compiled class files
+*.class
+META-INF/
+com/
