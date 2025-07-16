@@ -129,11 +129,12 @@ class AppLockStateMachine(
     private fun determineTargetFromLockedAppDetected(event: LockEvent): LockState? {
         return when (event) {
             is LockEvent.SettlementCompleted -> {
-                // Only transition to prompting if still in the same app and not authenticated
-                if (currentPackageName != null && !authService.isAuthenticated(currentPackageName!!)) {
-                    LockState.PROMPTING
+                // Check if app is already authenticated and transition to AUTHENTICATED if so
+                if (currentPackageName != null && authService.isAuthenticated(currentPackageName!!)) {
+                    LockState.AUTHENTICATED
                 } else {
-                    LockState.IDLE
+                    // Only transition to prompting if not authenticated
+                    LockState.PROMPTING
                 }
             }
             is LockEvent.NonLockedAppOpened -> LockState.IDLE

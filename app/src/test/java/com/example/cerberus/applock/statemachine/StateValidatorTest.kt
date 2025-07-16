@@ -67,6 +67,13 @@ class StateValidatorTest {
                 LockState.PROMPTING
             ))
         
+        assertTrue("Settlement completion should transition to AUTHENTICATED for already-authenticated apps", 
+            StateValidator.isValidTransition(
+                LockState.LOCKED_APP_DETECTED, 
+                LockEvent.SettlementCompleted, 
+                LockState.AUTHENTICATED
+            ))
+        
         assertTrue("Non-locked app should transition to IDLE", 
             StateValidator.isValidTransition(
                 LockState.LOCKED_APP_DETECTED, 

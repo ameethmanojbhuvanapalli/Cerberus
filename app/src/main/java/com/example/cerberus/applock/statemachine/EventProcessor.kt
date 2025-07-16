@@ -23,6 +23,11 @@ class EventProcessor(
      */
     private val promptActivityPattern = "PromptActivity"
     
+    // Simple debouncing to prevent rapid gesture events from causing false app switches
+    private var lastEventTime = 0L
+    private var lastEventPackage: String? = null
+    private val GESTURE_DEBOUNCE_MS = 100L // Ignore rapid events within 100ms
+    
     /**
      * Processes an accessibility event and returns the appropriate LockEvent.
      * Returns null if the event should be ignored.
@@ -39,6 +44,15 @@ class EventProcessor(
         
         val packageName = event.packageName?.toString()
         val className = event.className?.toString()
+        val currentTime = System.currentTimeMillis()
+        
+        // Simple debouncing for rapid gesture events
+        if (packageName == lastEventPackage && (currentTime - lastEventTime) < GESTURE_DEBOUNCE_MS) {
+            Log.d(TAG, "Debouncing rapid event for package: $packageName")
+            return null
+        }
+        lastEventTime = currentTime
+        lastEventPackage = packageName
         
         // Log the event for debugging
         Log.d(TAG, "Processing event: package=$packageName, class=$className, last=$lastPackageName")

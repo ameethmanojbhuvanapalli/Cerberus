@@ -63,7 +63,7 @@ object StateValidator {
      */
     private fun validateFromLockedAppDetected(event: LockEvent, targetState: LockState): Boolean {
         return when (event) {
-            is LockEvent.SettlementCompleted -> targetState == LockState.PROMPTING
+            is LockEvent.SettlementCompleted -> targetState == LockState.PROMPTING || targetState == LockState.AUTHENTICATED
             is LockEvent.NonLockedAppOpened -> targetState == LockState.IDLE
             is LockEvent.LockedAppOpened -> targetState == LockState.LOCKED_APP_DETECTED
             is LockEvent.CerberusAppOpened -> targetState == LockState.IDLE

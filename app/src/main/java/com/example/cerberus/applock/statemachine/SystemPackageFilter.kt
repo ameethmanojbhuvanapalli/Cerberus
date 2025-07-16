@@ -118,7 +118,10 @@ object SystemPackageFilter {
         "com.vivo.gallery",
         "com.vivo.gamecenter",
         "com.vivo.space",
-        "com.bbk.appstore"
+        "com.bbk.appstore",
+        "com.vivo.upslide", // Vivo gesture navigation
+        "com.vivo.gesture",
+        "com.bbk.gesture"
     )
     
     /**
@@ -253,7 +256,17 @@ object SystemPackageFilter {
         "com.android.systemui.gesture",
         "launcher_transition",
         "gesture_navigation",
-        "system_animation"
+        "system_animation",
+        // Recent apps / task switcher gestures
+        "com.android.launcher3.overview",
+        "com.android.launcher3.taskbar",
+        // OEM-specific gesture packages
+        "com.vivo.upslide",
+        "com.samsung.android.gestural",
+        "com.oneplus.gesture",
+        "com.miui.gesture",
+        "com.oppo.gesture",
+        "com.huawei.gesture"
     )
     
     /**
