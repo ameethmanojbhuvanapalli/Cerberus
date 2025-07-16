@@ -18,9 +18,10 @@ class EventProcessor(
     private val TAG = "EventProcessor"
     
     /**
-     * Name of the authentication prompt activity to ignore Cerberus events during auth
+     * Pattern for authentication prompt activities to ignore Cerberus events during auth.
+     * This covers all prompt activities (Biometric, PIN, Pattern, Password) dynamically.
      */
-    private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
+    private val promptActivityPattern = "PromptActivity"
     
     /**
      * Processes an accessibility event and returns the appropriate LockEvent.
@@ -92,7 +93,8 @@ class EventProcessor(
      */
     private fun handleCerberusApp(className: String): LockEvent? {
         // Ignore authentication prompt activities to prevent infinite loops
-        if (className.contains(promptActivityName)) {
+        // This dynamically handles all prompt activities (Biometric, PIN, Pattern, Password)
+        if (className.contains(promptActivityPattern)) {
             Log.d(TAG, "Ignoring Cerberus prompt activity: $className")
             return null
         }
