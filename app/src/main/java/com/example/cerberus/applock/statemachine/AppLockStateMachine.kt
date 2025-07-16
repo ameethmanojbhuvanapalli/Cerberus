@@ -186,7 +186,7 @@ class AppLockStateMachine(
         updateTrackingVariables(event)
         
         // Perform state-specific actions
-        performStateActions(event, previousState, targetState)
+        performStateActions(event, targetState)
         
         Log.i(TAG, "State transition: $previousState -> $targetState via $event")
     }
@@ -222,7 +222,7 @@ class AppLockStateMachine(
     /**
      * Performs actions specific to the new state
      */
-    private fun performStateActions(event: LockEvent, previousState: LockState, targetState: LockState) {
+    private fun performStateActions(event: LockEvent, targetState: LockState) {
         when (targetState) {
             LockState.IDLE -> {
                 // No additional actions needed when transitioning to idle

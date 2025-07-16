@@ -49,18 +49,7 @@ class EventProcessor(
             return null
         }
         
-        // Filter out system packages and gesture animations
-        if (SystemPackageFilter.isSystemPackage(packageName)) {
-            Log.d(TAG, "Ignoring system package: $packageName")
-            return LockEvent.SystemPackageDetected(packageName)
-        }
-        
-        if (SystemPackageFilter.isGestureAnimation(packageName)) {
-            Log.d(TAG, "Ignoring gesture animation: $packageName")
-            return LockEvent.SystemPackageDetected(packageName)
-        }
-        
-        // Handle Cerberus app specially
+        // Handle Cerberus app specially (always allow access)
         if (packageName == cerberusPackageName) {
             return handleCerberusApp(className)
         }
@@ -71,21 +60,31 @@ class EventProcessor(
             return LockEvent.SameAppActivityChanged(packageName, className)
         }
         
-        // Check if this is a locked app
+        // Check if this is a locked app first - if not, return early without other checks
         val lockedApps = getLockedApps()
         val isLockedApp = lockedApps.contains(packageName)
+        
+        if (!isLockedApp) {
+            Log.d(TAG, "Non-locked app opened: $packageName")  
+            return LockEvent.NonLockedAppOpened(packageName)
+        }
+        
+        // For locked apps, filter out system packages and gesture animations
+        if (SystemPackageFilter.isSystemPackage(packageName)) {
+            Log.d(TAG, "Ignoring system package: $packageName")
+            return LockEvent.SystemPackageDetected(packageName)
+        }
+        
+        if (SystemPackageFilter.isGestureAnimation(packageName)) {
+            Log.d(TAG, "Ignoring gesture animation: $packageName")
+            return LockEvent.SystemPackageDetected(packageName)
+        }
         
         // Note: App exit events will be handled by the state machine when the new app opens
         // The state machine will detect the app change and handle the exit appropriately
         
-        // Determine the event type for the new app
-        return if (isLockedApp) {
-            Log.d(TAG, "Locked app opened: $packageName")
-            LockEvent.LockedAppOpened(packageName, className)
-        } else {
-            Log.d(TAG, "Non-locked app opened: $packageName")  
-            LockEvent.NonLockedAppOpened(packageName)
-        }
+        Log.d(TAG, "Locked app opened: $packageName")
+        return LockEvent.LockedAppOpened(packageName, className)
     }
     
     /**
