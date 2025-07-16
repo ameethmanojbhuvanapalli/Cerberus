@@ -10,11 +10,14 @@ import com.example.cerberus.utils.HashUtil
 
 class PasswordPromptActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPasswordPromptBinding
+    private var packageNameToAuth: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPasswordPromptBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        packageNameToAuth = intent.getStringExtra("packageName")
 
         binding.confirmButton.setOnClickListener {
             val pwd = binding.passwordInput.text.toString()
@@ -27,5 +30,13 @@ class PasswordPromptActivity : AppCompatActivity() {
                 binding.passwordInput.text?.clear()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Send prompt finished broadcast
+        val intent = Intent("com.example.cerberus.AUTH_PROMPT_FINISHED")
+        intent.putExtra("packageName", packageNameToAuth)
+        sendBroadcast(intent)
     }
 }

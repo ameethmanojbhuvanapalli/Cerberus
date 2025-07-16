@@ -10,12 +10,14 @@ import com.itsxtt.patternlock.PatternLockView
 
 class PatternPromptActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPatternPromptBinding
+    private var packageNameToAuth: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPatternPromptBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        packageNameToAuth = intent.getStringExtra("packageName")
         val stored = PatternCache.getPatternHash(this) ?: return finish()
 
         binding.patternLockView.setOnPatternListener(object : PatternLockView.OnPatternListener {
@@ -32,5 +34,13 @@ class PatternPromptActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Send prompt finished broadcast
+        val intent = Intent("com.example.cerberus.AUTH_PROMPT_FINISHED")
+        intent.putExtra("packageName", packageNameToAuth)
+        sendBroadcast(intent)
     }
 }

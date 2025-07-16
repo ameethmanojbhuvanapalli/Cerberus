@@ -20,6 +20,7 @@ class PasswordAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_PROMPT_FINISHED")
             }
             ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
             receiverRegistered = true
@@ -39,6 +40,7 @@ class PasswordAuthenticator : Authenticator {
             when (intent.action) {
                 "com.example.cerberus.AUTH_SUCCESS" -> notifyAuthenticationSucceeded()
                 "com.example.cerberus.AUTH_FAILURE" -> notifyAuthenticationFailed()
+                "com.example.cerberus.AUTH_PROMPT_FINISHED" -> notifyPromptDestroyed(ctx)
             }
             try { lastContext?.unregisterReceiver(this) } catch (_: Exception) {}
             receiverRegistered = false
@@ -50,5 +52,16 @@ class PasswordAuthenticator : Authenticator {
     }
     private fun notifyAuthenticationFailed() {
         lastPackageName?.let { pkg -> callbacks.forEach { it.onAuthenticationFailed(pkg) } }
+    }
+    
+    private fun notifyPromptDestroyed(context: Context) {
+        lastPackageName?.let { packageName ->
+            try {
+                val authManager = com.example.cerberus.auth.AuthenticationManager.getInstance(context)
+                authManager.getAuthService().notifyPromptDestroyed(packageName)
+            } catch (e: Exception) {
+                // Log error if needed
+            }
+        }
     }
 }

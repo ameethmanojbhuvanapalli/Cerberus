@@ -23,6 +23,7 @@ class PatternAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_PROMPT_FINISHED")
             }
             ContextCompat.registerReceiver(
                 context,
@@ -54,9 +55,22 @@ class PatternAuthenticator : Authenticator {
                     lastPkg?.let { pkg -> callbacks.forEach { it.onAuthenticationSucceeded(pkg) } }
                 "com.example.cerberus.AUTH_FAILURE" ->
                     lastPkg?.let { pkg -> callbacks.forEach { it.onAuthenticationFailed(pkg) } }
+                "com.example.cerberus.AUTH_PROMPT_FINISHED" ->
+                    notifyPromptDestroyed(ctx)
             }
             try { lastCtx?.unregisterReceiver(this) } catch(_: Exception) {}
             recRegistered = false
+        }
+    }
+
+    private fun notifyPromptDestroyed(context: Context) {
+        lastPkg?.let { packageName ->
+            try {
+                val authManager = com.example.cerberus.auth.AuthenticationManager.getInstance(context)
+                authManager.getAuthService().notifyPromptDestroyed(packageName)
+            } catch (e: Exception) {
+                // Log error if needed
+            }
         }
     }
 }

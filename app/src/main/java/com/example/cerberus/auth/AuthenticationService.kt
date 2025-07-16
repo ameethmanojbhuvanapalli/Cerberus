@@ -53,7 +53,20 @@ class AuthenticationService(
         
         // Listen for state machine transitions
         stateMachine.addStateChangeListener { packageName, oldState, newState ->
-            Log.d(TAG, "State transition for $packageName: $oldState → $newState")
+            Log.d(TAG, "State machine transition for $packageName: $oldState → $newState")
+            
+            // Log additional context for debugging
+            when (newState) {
+                AuthenticationStateMachine.State.PROMPTING -> {
+                    Log.d(TAG, "Authentication prompt now active for $packageName")
+                }
+                AuthenticationStateMachine.State.AUTHENTICATED -> {
+                    Log.d(TAG, "Authentication successful - $packageName now authenticated")
+                }
+                AuthenticationStateMachine.State.UNAUTHENTICATED -> {
+                    Log.d(TAG, "Authentication cleared for $packageName")
+                }
+            }
         }
     }
 
