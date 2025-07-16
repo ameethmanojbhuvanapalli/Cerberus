@@ -1,126 +1,72 @@
 package com.example.cerberus.applock
 
 import android.accessibilityservice.AccessibilityService
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import com.example.cerberus.auth.AuthenticationCallback
-import com.example.cerberus.auth.AuthenticationManager
-import com.example.cerberus.auth.AuthChannel
-import com.example.cerberus.data.LockedAppsCache
+import com.example.cerberus.applock.statemachine.AppLockStateMachine
+import com.example.cerberus.applock.statemachine.EventProcessor
+import com.example.cerberus.applock.statemachine.LockEvent
 import com.example.cerberus.data.ProtectionCache
 
 class AppLockService : AccessibilityService() {
-    private var lastPackageName: String? = null
-    private var lastClassName: String? = null
     private val TAG = "AppLockService"
     private lateinit var myPackageName: String
-    private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
-    private val systemPackages = setOf("com.android.systemui", "android", null)
-
-    private val handler = Handler(Looper.getMainLooper())
-    private var stablePromptRunnable: Runnable? = null
-    private var stableSince: Long = 0L
-    private var activityChangeCount: Int = 0
-    private val STABLE_DELAY = 500L
-
-    // Debounce for app exit
-    private var appExitRunnable: Runnable? = null
-    private val APP_EXIT_DELAY = 1500L // ms (tweak as needed)
-    private var pendingAppExitPackage: String? = null
-
-    private val authService
-        get() = AuthenticationManager.getInstance(applicationContext).getAuthService()
+    
+    // State machine components
+    private lateinit var stateMachine: AppLockStateMachine
+    private lateinit var eventProcessor: EventProcessor
+    
+    // Last package name for event processing
+    private var lastPackageName: String? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-        Log.d(TAG, "Service connected")
+        
+        // Initialize state machine components
+        stateMachine = AppLockStateMachine(applicationContext)
+        eventProcessor = EventProcessor(applicationContext, myPackageName)
+        
+        Log.d(TAG, "Service connected with state machine initialized")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Check if protection is enabled
         if (!isProtectionEnabled()) return
-        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-
-        val foregroundPackage = event.packageName?.toString() ?: return
-        val foregroundClass = event.className?.toString() ?: return
-
-        if (systemPackages.contains(foregroundPackage)) return
-
-        // Don't prompt if prompt activity is being shown
-        if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
-            lastPackageName = foregroundPackage
-            lastClassName = foregroundClass
-            return
+        
+        // Process the event through the event processor
+        val lockEvent = eventProcessor.processEvent(event, lastPackageName)
+        
+        // Update last package name for next event
+        event?.packageName?.toString()?.let { packageName ->
+            lastPackageName = packageName
         }
-
-        val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
-
-        // Debounced expiration update logic
-        if (
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            lockedApps.contains(lastPackageName)
-        ) {
-            // User appears to have left a locked app
-            pendingAppExitPackage = lastPackageName
-            // Cancel any previous pending exit
-            appExitRunnable?.let { handler.removeCallbacks(it) }
-            appExitRunnable = Runnable {
-                // Only update expiration if user did NOT return to the locked app
-                if (pendingAppExitPackage != foregroundPackage) {
-                    Log.d(TAG, "Updating expiration for: $pendingAppExitPackage")
-                    authService.updateExpirationForAppExit(pendingAppExitPackage!!)
-                } else {
-                    Log.d(TAG, "Debounced: User returned to locked app, not updating expiration")
-                }
-                pendingAppExitPackage = null
+        
+        // Process the lock event through the state machine if valid
+        lockEvent?.let { 
+            val processed = stateMachine.processEvent(it)
+            if (processed) {
+                Log.d(TAG, "Event processed by state machine: $it")
             }
-            handler.postDelayed(appExitRunnable!!, APP_EXIT_DELAY)
         }
-
-        // Prompt logic (unchanged)
-        if (
-            lockedApps.contains(foregroundPackage) &&
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            !authService.isAuthenticated(foregroundPackage)
-        ) {
-            activityChangeCount = 1
-            stableSince = System.currentTimeMillis()
-
-            stablePromptRunnable?.let { handler.removeCallbacks(it) }
-            stablePromptRunnable = Runnable {
-                // Only prompt if still in the same package/class as when scheduled
-                if (
-                    lockedApps.contains(foregroundPackage) &&
-                    lastPackageName == foregroundPackage &&
-                    lastClassName == foregroundClass
-                ) {
-                    Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
-                    authService.requestAuthenticationIfNeeded(
-                        AuthChannel.APPLOCK,
-                        foregroundPackage,
-                        object : AuthenticationCallback {
-                            override fun onAuthenticationSucceeded(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
-                            }
-                            override fun onAuthenticationFailed(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
-                            }
-                        }
-                    )
-                }
-            }
-            handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
-        }
-
-        lastPackageName = foregroundPackage
-        lastClassName = foregroundClass
     }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        Log.d(TAG, "Service interrupted")
+        // Clean up state machine on interruption
+        if (this::stateMachine.isInitialized) {
+            stateMachine.shutdown()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "Service destroyed")
+        // Clean up state machine on destroy
+        if (this::stateMachine.isInitialized) {
+            stateMachine.shutdown()
+        }
+    }
 
     private fun isProtectionEnabled(): Boolean {
         return ProtectionCache.isProtectionEnabled(this)
