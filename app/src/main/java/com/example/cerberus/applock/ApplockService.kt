@@ -16,7 +16,13 @@ class AppLockService : AccessibilityService() {
     private var lastClassName: String? = null
     private val TAG = "AppLockService"
     private lateinit var myPackageName: String
-    private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
+    // All Cerberus authentication prompt activities that should be ignored
+    private val cerberusPromptActivities = setOf(
+        "BiometricPromptActivity",
+        "PinPromptActivity", 
+        "PasswordPromptActivity",
+        "PatternPromptActivity"
+    )
     private val systemPackages = setOf("com.android.systemui", "android", null)
 
     private val handler = Handler(Looper.getMainLooper())
@@ -48,14 +54,16 @@ class AppLockService : AccessibilityService() {
 
         if (systemPackages.contains(foregroundPackage)) return
 
-        // Don't prompt if prompt activity is being shown
-        if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
+        // Completely ignore all Cerberus authentication prompt activities
+        if (foregroundPackage == myPackageName && isCerberusPromptActivity(foregroundClass)) {
+            Log.d(TAG, "Ignoring Cerberus prompt activity: $foregroundClass")
             lastPackageName = foregroundPackage
             lastClassName = foregroundClass
             return
         }
 
-        val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
+        // Get locked apps but do NOT include Cerberus itself to prevent authentication loops
+        val lockedApps = LockedAppsCache.getLockedApps(this)
 
         // Debounced expiration update logic
         if (
@@ -121,6 +129,10 @@ class AppLockService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+
+    private fun isCerberusPromptActivity(className: String): Boolean {
+        return cerberusPromptActivities.any { className.contains(it) }
+    }
 
     private fun isProtectionEnabled(): Boolean {
         return ProtectionCache.isProtectionEnabled(this)
