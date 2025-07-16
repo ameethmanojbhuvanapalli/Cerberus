@@ -1,6 +1,7 @@
 package com.example.cerberus.auth
 
 import android.content.Context
+import com.example.cerberus.auth.ModularAuthenticationService
 import com.example.cerberus.auth.authenticator.Authenticator
 import com.example.cerberus.auth.authenticator.AuthenticatorChangeListener
 import com.example.cerberus.auth.authenticator.AuthenticatorFactory
@@ -14,8 +15,8 @@ class AuthenticationManager private constructor(context: Context) {
     private var currentAuthenticator: Authenticator? = null
     private val listeners = mutableListOf<AuthenticatorChangeListener>()
 
-    private val _authService: AuthenticationService by lazy {
-        AuthenticationService(contextRef.get()!!, getCurrentAuthenticator())
+    private val _authService: ModularAuthenticationService by lazy {
+        ModularAuthenticationService(contextRef.get()!!, getCurrentAuthenticator())
     }
 
     companion object {
@@ -63,7 +64,7 @@ class AuthenticationManager private constructor(context: Context) {
         }
     }
 
-    fun getAuthService(): AuthenticationService = _authService
+    fun getAuthService(): ModularAuthenticationService = _authService
 
     fun shutdown() {
         _authService.shutdown()
