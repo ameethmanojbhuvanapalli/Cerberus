@@ -10,6 +10,7 @@ import com.example.cerberus.auth.AuthenticationManager
 import com.example.cerberus.auth.AuthChannel
 import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.data.ProtectionCache
+import com.example.cerberus.statemachine.AppStateMachine
 
 class AppLockService : AccessibilityService() {
     private var lastPackageName: String? = null
@@ -19,6 +20,11 @@ class AppLockService : AccessibilityService() {
     private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
     private val systemPackages = setOf("com.android.systemui", "android", null)
 
+    // Enhanced state management components
+    private val stateMachine = AppStateMachine()
+    private lateinit var eventProcessor: EventProcessor
+
+    // Legacy components (preserved for backward compatibility)
     private val handler = Handler(Looper.getMainLooper())
     private var stablePromptRunnable: Runnable? = null
     private var stableSince: Long = 0L
@@ -30,17 +36,38 @@ class AppLockService : AccessibilityService() {
     private val APP_EXIT_DELAY = 1500L // ms (tweak as needed)
     private var pendingAppExitPackage: String? = null
 
+    // Feature flag for new event processing (can be toggled for testing)
+    private val useEnhancedEventProcessing = true
+
     private val authService
         get() = AuthenticationManager.getInstance(applicationContext).getAuthService()
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-        Log.d(TAG, "Service connected")
+        
+        // Initialize enhanced event processor
+        eventProcessor = EventProcessor(applicationContext, stateMachine)
+        
+        Log.d(TAG, "Service connected with enhanced event processing: $useEnhancedEventProcessing")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (!isProtectionEnabled()) return
+        
+        if (useEnhancedEventProcessing) {
+            // Use new DFA-based event processing
+            eventProcessor.processAccessibilityEvent(event, myPackageName, promptActivityName)
+        } else {
+            // Fallback to legacy event processing for backward compatibility
+            processEventLegacy(event)
+        }
+    }
+    
+    /**
+     * Legacy event processing method preserved for backward compatibility
+     */
+    private fun processEventLegacy(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         val foregroundPackage = event.packageName?.toString() ?: return
@@ -121,6 +148,24 @@ class AppLockService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        
+        // Cleanup event processor
+        if (::eventProcessor.isInitialized) {
+            eventProcessor.shutdown()
+        }
+        
+        // Cleanup legacy handlers
+        stablePromptRunnable?.let { handler.removeCallbacks(it) }
+        appExitRunnable?.let { handler.removeCallbacks(it) }
+        
+        // Clear state machine
+        stateMachine.clearAllStates()
+        
+        Log.d(TAG, "AppLockService destroyed and cleaned up")
+    }
 
     private fun isProtectionEnabled(): Boolean {
         return ProtectionCache.isProtectionEnabled(this)
