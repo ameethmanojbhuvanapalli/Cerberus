@@ -16,14 +16,23 @@ import com.example.cerberus.statemachine.StateTransitionListener
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Processes accessibility events and maps them to app events for the state machine.
- * This class serves as the bridge between the AccessibilityService and the
- * DFA-based state machine, implementing intelligent event processing and
- * gesture classification.
+ * EventProcessor - Central coordinator for app state management and authentication
+ * 
+ * This class follows the Single Responsibility Principle and serves as the central coordinator:
+ * - Processes accessibility events and maps them to app state transitions
+ * - Manages the DFA state machine for app lifecycle states
+ * - Coordinates with AuthenticationService for authentication requests
+ * - Implements intelligent gesture classification and debouncing
+ * - Handles timeout management and app exit detection
+ * 
+ * Architecture:
+ * AccessibilityEvent → EventProcessor → StateMachine → Authentication (when needed)
  */
 class EventProcessor(
     private val context: Context,
     private val stateMachine: AppStateMachine,
+    private val myPackageName: String,
+    private val promptActivityName: String,
     private val gestureClassifier: GestureClassifier = GestureClassifier()
 ) : StateTransitionListener {
     
@@ -53,13 +62,13 @@ class EventProcessor(
     
     init {
         stateMachine.addStateTransitionListener(this)
-        Log.d(TAG, "EventProcessor initialized")
+        Log.d(TAG, "EventProcessor initialized with clean architecture")
     }
     
     /**
-     * Process an accessibility event and determine appropriate state machine events
+     * Main entry point for processing accessibility events
      */
-    fun processAccessibilityEvent(event: AccessibilityEvent?, myPackageName: String, promptActivityName: String) {
+    fun processAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         
         val foregroundPackage = event.packageName?.toString() ?: return
@@ -161,38 +170,95 @@ class EventProcessor(
             stateMachine.processEvent(foregroundPackage, AppEvent.APP_LAUNCHED)
             appLaunchTimes[foregroundPackage] = currentTime
         }
-        
-        // Check if authentication is needed
-        checkAuthenticationNeeded(foregroundPackage, currentState, currentTime)
     }
     
-    private fun checkAuthenticationNeeded(packageName: String, currentState: AppState, currentTime: Long) {
-        // Only trigger authentication for foreground apps that aren't already authenticated
-        if (currentState == AppState.FOREGROUND && 
-            lastPackageName != packageName && 
-            !authService.isAuthenticated(packageName)) {
-            
-            activityChangeCount = 1
-            
-            // Cancel any previous stable prompt
-            stablePromptRunnable?.let { handler.removeCallbacks(it) }
-            
-            stablePromptRunnable = Runnable {
-                // Only prompt if still in foreground state
-                if (stateMachine.getCurrentState(packageName) == AppState.FOREGROUND) {
-                    Log.d(TAG, "Triggering authentication prompt for: $packageName")
-                    
-                    // Transition to authenticating state
-                    if (stateMachine.processEvent(packageName, AppEvent.AUTH_PROMPT_SHOWN)) {
-                        requestAuthentication(packageName)
-                    }
+    private fun updateLastEvent(packageName: String, className: String, time: Long) {
+        lastPackageName = packageName
+        lastClassName = className
+        lastEventTime = time
+    }
+    
+    private fun isSystemPackage(packageName: String): Boolean {
+        return packageName in setOf("com.android.systemui", "android") || packageName.isBlank()
+    }
+    
+    /**
+     * StateTransitionListener implementation - handles state change notifications
+     * This is where we coordinate between state changes and authentication requests
+     */
+    override fun onStateChanged(
+        packageName: String,
+        fromState: AppState,
+        toState: AppState,
+        event: AppEvent
+    ) {
+        Log.d(TAG, "State change: $packageName $fromState -> $toState (event: $event)")
+        
+        when (toState) {
+            AppState.FOREGROUND -> {
+                // App moved to foreground - check if authentication is needed
+                if (fromState == AppState.IDLE && !authService.isAuthenticated(packageName)) {
+                    // New app launch requiring authentication
+                    scheduleAuthenticationPrompt(packageName)
+                } else if (fromState == AppState.BACKGROUND && !authService.isAuthenticated(packageName)) {
+                    // App returned from background - check if auth expired
+                    scheduleAuthenticationPrompt(packageName)
                 }
             }
-            
-            handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
+            AppState.BACKGROUND -> {
+                // App moved to background, start timeout if authenticated
+                if (fromState == AppState.AUTHENTICATED) {
+                    Log.d(TAG, "Starting timeout management for backgrounded app: $packageName")
+                }
+            }
+            AppState.EXITED -> {
+                // Clean up any timers for this app
+                appLaunchTimes.remove(packageName)
+                Log.d(TAG, "Cleaned up tracking for exited app: $packageName")
+            }
+            else -> {
+                // No special handling needed for other states
+            }
         }
     }
     
+    override fun onTransitionRejected(
+        packageName: String,
+        currentState: AppState,
+        event: AppEvent
+    ) {
+        Log.w(TAG, "Transition rejected for $packageName: $currentState + $event")
+    }
+    
+    /**
+     * Schedule authentication prompt with debouncing for stability
+     */
+    private fun scheduleAuthenticationPrompt(packageName: String) {
+        activityChangeCount = 1
+        
+        // Cancel any previous stable prompt
+        stablePromptRunnable?.let { handler.removeCallbacks(it) }
+        
+        stablePromptRunnable = Runnable {
+            // Only prompt if still in foreground state and different from last package
+            if (stateMachine.getCurrentState(packageName) == AppState.FOREGROUND &&
+                lastPackageName == packageName) {
+                
+                Log.d(TAG, "Triggering authentication prompt for: $packageName")
+                
+                // Transition to authenticating state
+                if (stateMachine.processEvent(packageName, AppEvent.AUTH_PROMPT_SHOWN)) {
+                    requestAuthentication(packageName)
+                }
+            }
+        }
+        
+        handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
+    }
+    
+    /**
+     * Request authentication from AuthenticationService
+     */
     private fun requestAuthentication(packageName: String) {
         authService.requestAuthenticationIfNeeded(
             AuthChannel.APPLOCK,
@@ -209,52 +275,6 @@ class EventProcessor(
                 }
             }
         )
-    }
-    
-    private fun updateLastEvent(packageName: String, className: String, time: Long) {
-        lastPackageName = packageName
-        lastClassName = className
-        lastEventTime = time
-    }
-    
-    private fun isSystemPackage(packageName: String): Boolean {
-        return packageName in setOf("com.android.systemui", "android") || packageName.isBlank()
-    }
-    
-    // StateTransitionListener implementation
-    override fun onStateChanged(
-        packageName: String,
-        fromState: AppState,
-        toState: AppState,
-        event: AppEvent
-    ) {
-        Log.d(TAG, "State change notification: $packageName $fromState -> $toState (event: $event)")
-        
-        // Handle timeout management based on state changes
-        when (toState) {
-            AppState.BACKGROUND -> {
-                // App moved to background, start timeout if authenticated
-                if (fromState == AppState.AUTHENTICATED) {
-                    Log.d(TAG, "Starting timeout management for backgrounded app: $packageName")
-                }
-            }
-            AppState.EXITED -> {
-                // Clean up any timers for this app
-                appLaunchTimes.remove(packageName)
-                Log.d(TAG, "Cleaned up tracking for exited app: $packageName")
-            }
-            else -> {
-                // No special handling needed
-            }
-        }
-    }
-    
-    override fun onTransitionRejected(
-        packageName: String,
-        currentState: AppState,
-        event: AppEvent
-    ) {
-        Log.w(TAG, "Transition rejected for $packageName: $currentState + $event")
     }
     
     /**
