@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.cerberus.auth.AuthenticationCallback
+import com.example.cerberus.auth.PromptActivityManager
 import com.example.cerberus.auth.authenticator.Authenticator
 import com.example.cerberus.ui.activity.BiometricPromptActivity
 
@@ -36,6 +37,10 @@ class BiometricAuthenticator : Authenticator {
                         Log.d(TAG, "Auth failure broadcast received")
                         notifyAuthenticationFailed()
                     }
+                    "com.example.cerberus.AUTH_DISMISSED" -> {
+                        Log.d(TAG, "Auth dismissed broadcast received")
+                        notifyAuthenticationFailed()
+                    }
                 }
             }
         }
@@ -43,6 +48,7 @@ class BiometricAuthenticator : Authenticator {
         val filter = IntentFilter().apply {
             addAction("com.example.cerberus.AUTH_SUCCESS")
             addAction("com.example.cerberus.AUTH_FAILURE")
+            addAction("com.example.cerberus.AUTH_DISMISSED")
         }
 
         ContextCompat.registerReceiver(
@@ -55,6 +61,7 @@ class BiometricAuthenticator : Authenticator {
         // Launch biometric authentication
         Log.d(TAG, "Launching BiometricPromptActivity")
         val intent = Intent(context, BiometricPromptActivity::class.java)
+        intent.putExtra("packageName", packageName)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
         context.startActivity(intent)
     }

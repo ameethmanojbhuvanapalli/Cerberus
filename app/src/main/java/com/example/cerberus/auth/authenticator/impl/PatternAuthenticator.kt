@@ -23,6 +23,7 @@ class PatternAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_DISMISSED")
             }
             ContextCompat.registerReceiver(
                 context,
@@ -53,6 +54,8 @@ class PatternAuthenticator : Authenticator {
                 "com.example.cerberus.AUTH_SUCCESS" ->
                     lastPkg?.let { pkg -> callbacks.forEach { it.onAuthenticationSucceeded(pkg) } }
                 "com.example.cerberus.AUTH_FAILURE" ->
+                    lastPkg?.let { pkg -> callbacks.forEach { it.onAuthenticationFailed(pkg) } }
+                "com.example.cerberus.AUTH_DISMISSED" ->
                     lastPkg?.let { pkg -> callbacks.forEach { it.onAuthenticationFailed(pkg) } }
             }
             try { lastCtx?.unregisterReceiver(this) } catch(_: Exception) {}
