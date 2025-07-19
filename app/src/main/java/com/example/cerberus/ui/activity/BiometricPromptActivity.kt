@@ -49,20 +49,20 @@ class BiometricPromptActivity : FragmentActivity() {
         showBiometricPrompt()
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Prompt activities should only be foreground or destroyed
+        // If we're being paused, finish immediately to return to home screen
+        Log.d(TAG, "Activity paused - finishing to return to home screen")
+        finish()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         // Unregister from PromptActivityManager
         if (isRegisteredWithManager) {
             PromptActivityManager.unregisterPrompt(packageNameToAuth!!, "biometric")
         }
-        // Always send a "prompt finished" broadcast
-        sendPromptFinishedBroadcast()
-    }
-
-    private fun sendPromptFinishedBroadcast() {
-        val intent = Intent("com.example.cerberus.AUTH_PROMPT_FINISHED")
-        intent.putExtra("packageName", packageNameToAuth)
-        sendBroadcast(intent)
     }
 
     private fun sendAuthDismissedBroadcast() {

@@ -56,6 +56,14 @@ class PinPromptActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Prompt activities should only be foreground or destroyed
+        // If we're being paused, finish immediately to return to home screen
+        Log.d(TAG, "Activity paused - finishing to return to home screen")
+        finish()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         // Unregister from PromptActivityManager
