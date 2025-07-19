@@ -26,6 +26,7 @@ class PinAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_DISMISSED")
             }
             ContextCompat.registerReceiver(
                 context,
@@ -57,6 +58,7 @@ class PinAuthenticator : Authenticator {
             when (action) {
                 "com.example.cerberus.AUTH_SUCCESS" -> notifyAuthenticationSucceeded()
                 "com.example.cerberus.AUTH_FAILURE" -> notifyAuthenticationFailed()
+                "com.example.cerberus.AUTH_DISMISSED" -> notifyAuthenticationFailed()
             }
             // Unregister after handling
             try {

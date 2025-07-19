@@ -20,6 +20,7 @@ class PasswordAuthenticator : Authenticator {
             val filter = IntentFilter().apply {
                 addAction("com.example.cerberus.AUTH_SUCCESS")
                 addAction("com.example.cerberus.AUTH_FAILURE")
+                addAction("com.example.cerberus.AUTH_DISMISSED")
             }
             ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
             receiverRegistered = true
@@ -39,6 +40,7 @@ class PasswordAuthenticator : Authenticator {
             when (intent.action) {
                 "com.example.cerberus.AUTH_SUCCESS" -> notifyAuthenticationSucceeded()
                 "com.example.cerberus.AUTH_FAILURE" -> notifyAuthenticationFailed()
+                "com.example.cerberus.AUTH_DISMISSED" -> notifyAuthenticationFailed()
             }
             try { lastContext?.unregisterReceiver(this) } catch (_: Exception) {}
             receiverRegistered = false
