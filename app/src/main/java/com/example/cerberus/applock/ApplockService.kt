@@ -1,6 +1,8 @@
 package com.example.cerberus.applock
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -12,23 +14,18 @@ import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.data.ProtectionCache
 
 class AppLockService : AccessibilityService() {
+    private val TAG = "AppLockService"
     private var lastPackageName: String? = null
     private var lastClassName: String? = null
-    private val TAG = "AppLockService"
     private lateinit var myPackageName: String
-    private val promptActivityName = "com.example.cerberus.utils.BiometricPromptActivity"
-    private val systemPackages = setOf("com.android.systemui", "android", null)
 
+    // Keep stable delay logic
     private val handler = Handler(Looper.getMainLooper())
     private var stablePromptRunnable: Runnable? = null
-    private var stableSince: Long = 0L
-    private var activityChangeCount: Int = 0
     private val STABLE_DELAY = 500L
 
-    // Debounce for app exit
-    private var appExitRunnable: Runnable? = null
-    private val APP_EXIT_DELAY = 1500L // ms (tweak as needed)
-    private var pendingAppExitPackage: String? = null
+    // Cache of launcher packages for performance
+    private val launcherPackages: MutableSet<String> = mutableSetOf()
 
     private val authService
         get() = AuthenticationManager.getInstance(applicationContext).getAuthService()
@@ -36,7 +33,29 @@ class AppLockService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         myPackageName = packageName
-        Log.d(TAG, "Service connected")
+        findLauncherPackages()
+        Log.d(TAG, "Service connected, discovered launchers: $launcherPackages")
+    }
+
+    /**
+     * Identifies all installed launcher applications by checking which apps
+     * can respond to the HOME intent
+     */
+    private fun findLauncherPackages() {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+
+        val resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+
+        for (resolveInfo in resolveInfos) {
+            resolveInfo.activityInfo.packageName?.let {
+                launcherPackages.add(it)
+            }
+        }
+
+        // Fallback for common launchers in case the detection misses some
+        launcherPackages.addAll(COMMON_LAUNCHER_PACKAGES)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -46,68 +65,38 @@ class AppLockService : AccessibilityService() {
         val foregroundPackage = event.packageName?.toString() ?: return
         val foregroundClass = event.className?.toString() ?: return
 
-        if (systemPackages.contains(foregroundPackage)) return
+        // Skip our own package
+        if (foregroundPackage == myPackageName) return
 
-        // Don't prompt if prompt activity is being shown
-        if (foregroundPackage == myPackageName && foregroundClass.contains(promptActivityName)) {
-            lastPackageName = foregroundPackage
-            lastClassName = foregroundClass
-            return
-        }
+        val lockedApps = LockedAppsCache.getLockedApps(this)
 
-        val lockedApps = LockedAppsCache.getLockedApps(this).toMutableSet().apply { add(myPackageName) }
-
-        // Debounced expiration update logic
-        if (
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            lockedApps.contains(lastPackageName)
-        ) {
-            // User appears to have left a locked app
-            pendingAppExitPackage = lastPackageName
-            // Cancel any previous pending exit
-            appExitRunnable?.let { handler.removeCallbacks(it) }
-            appExitRunnable = Runnable {
-                // Only update expiration if user did NOT return to the locked app
-                if (pendingAppExitPackage != foregroundPackage) {
-                    Log.d(TAG, "Updating expiration for: $pendingAppExitPackage")
-                    authService.updateExpirationForAppExit(pendingAppExitPackage!!)
-                } else {
-                    Log.d(TAG, "Debounced: User returned to locked app, not updating expiration")
-                }
-                pendingAppExitPackage = null
+        // Handle launcher appearance - update expiration time for previous app
+        if (isLauncherPackage(foregroundPackage) && lastPackageName != null && !isLauncherPackage(lastPackageName)) {
+            if (lockedApps.contains(lastPackageName)) {
+                Log.d(TAG, "Launcher detected, updating expiration for: $lastPackageName")
+                authService.updateExpirationForAppExit(lastPackageName!!)
             }
-            handler.postDelayed(appExitRunnable!!, APP_EXIT_DELAY)
         }
 
-        // Prompt logic (unchanged)
-        if (
-            lockedApps.contains(foregroundPackage) &&
-            lastPackageName != null &&
-            lastPackageName != foregroundPackage &&
-            !authService.isAuthenticated(foregroundPackage)
-        ) {
-            activityChangeCount = 1
-            stableSince = System.currentTimeMillis()
-
+        // Handle locked app authentication
+        if (lockedApps.contains(foregroundPackage) && !authService.isAuthenticated(foregroundPackage)) {
+            // Cancel any previous authentication request
             stablePromptRunnable?.let { handler.removeCallbacks(it) }
+
+            // Set up new authentication request with delay
             stablePromptRunnable = Runnable {
-                // Only prompt if still in the same package/class as when scheduled
-                if (
-                    lockedApps.contains(foregroundPackage) &&
-                    lastPackageName == foregroundPackage &&
-                    lastClassName == foregroundClass
-                ) {
-                    Log.d(TAG, "Prompting after $activityChangeCount activity changes and ${System.currentTimeMillis() - stableSince}ms dwell")
+                // Only prompt if still in the same app
+                if (lastPackageName == foregroundPackage) {
+                    Log.d(TAG, "Requesting authentication for locked app: $foregroundPackage")
                     authService.requestAuthenticationIfNeeded(
                         AuthChannel.APPLOCK,
                         foregroundPackage,
                         object : AuthenticationCallback {
                             override fun onAuthenticationSucceeded(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
+                                // Handled by authentication system
                             }
                             override fun onAuthenticationFailed(packageName: String) {
-                                // No-op: handled by AppLockService UI/UX
+                                // Handled by authentication system
                             }
                         }
                     )
@@ -116,13 +105,39 @@ class AppLockService : AccessibilityService() {
             handler.postDelayed(stablePromptRunnable!!, STABLE_DELAY)
         }
 
+        // Update tracking variables
         lastPackageName = foregroundPackage
         lastClassName = foregroundClass
+    }
+
+    /**
+     * Checks if the given package is a launcher app
+     */
+    private fun isLauncherPackage(packageName: String?): Boolean {
+        if (packageName == null) return false
+        return launcherPackages.contains(packageName)
     }
 
     override fun onInterrupt() {}
 
     private fun isProtectionEnabled(): Boolean {
         return ProtectionCache.isProtectionEnabled(this)
+    }
+
+    companion object {
+        // Fallback list of common launcher package names across different manufacturers
+        private val COMMON_LAUNCHER_PACKAGES = setOf(
+            //"com.android.launcher3",              // AOSP
+            "com.google.android.apps.nexuslauncher", // Pixel
+            "com.sec.android.app.launcher",       // Samsung
+            "com.sec.android.app.twlauncher",     // Older Samsung
+            "com.miui.home",                      // Xiaomi
+            "com.huawei.android.launcher",        // Huawei
+            "net.oneplus.launcher",               // OnePlus
+            "com.asus.launcher",                  // Asus
+            "com.htc.launcher",                   // HTC
+            "com.oppo.launcher",                  // Oppo
+            "com.vivo.launcher"                   // Vivo
+        )
     }
 }
