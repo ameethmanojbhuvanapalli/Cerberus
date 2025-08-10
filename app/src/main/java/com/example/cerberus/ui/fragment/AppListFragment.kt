@@ -16,6 +16,7 @@ import com.example.cerberus.data.AppInfoCache
 import com.example.cerberus.data.LockedAppsCache
 import com.example.cerberus.ui.activity.AppListTabsActivity
 import com.example.cerberus.ui.adapter.AppListAdapter
+import com.example.cerberus.ui.view.FastScrollerView
 
 class AppListFragment : Fragment() {
 
@@ -37,6 +38,7 @@ class AppListFragment : Fragment() {
         val listView: ListView = view.findViewById(R.id.app_list_view)
         val searchEditText: EditText = view.findViewById(R.id.search_edit_text)
         val saveButton: Button = view.findViewById(R.id.save_button)
+        val fastScroller: FastScrollerView = view.findViewById(R.id.fast_scroller)
         val context = requireContext()
         val pm = context.packageManager
         val allLockedApps = LockedAppsCache.getLockedApps(context)
@@ -63,6 +65,19 @@ class AppListFragment : Fragment() {
                 adapter?.filter(s?.toString() ?: "")
             }
         })
+
+        // Set up fast scroller
+        fastScroller.setOnLetterSelectedListener { letter ->
+            adapter?.filterByLetter(letter)
+            
+            // Scroll to first app starting with selected letter
+            val firstMatchingPosition = filteredApps.indexOfFirst { app ->
+                app.appName.uppercase().startsWith(letter)
+            }
+            if (firstMatchingPosition >= 0) {
+                listView.smoothScrollToPosition(firstMatchingPosition)
+            }
+        }
 
         saveButton.setOnClickListener {
             adapter?.let {
@@ -102,12 +117,26 @@ class AppListFragment : Fragment() {
         adapter = AppListAdapter(context, filteredApps, allLockedApps.toMutableSet())
         val listView: ListView = view?.findViewById(R.id.app_list_view) ?: return
         val searchEditText: EditText? = view?.findViewById(R.id.search_edit_text)
+        val fastScroller: FastScrollerView? = view?.findViewById(R.id.fast_scroller)
         listView.adapter = adapter
         
         // Re-apply search filter if there's text in the search box
         searchEditText?.text?.toString()?.let { searchText ->
             if (searchText.isNotEmpty()) {
                 adapter?.filter(searchText)
+            }
+        }
+
+        // Re-setup fast scroller listener
+        fastScroller?.setOnLetterSelectedListener { letter ->
+            adapter?.filterByLetter(letter)
+            
+            // Scroll to first app starting with selected letter
+            val firstMatchingPosition = filteredApps.indexOfFirst { app ->
+                app.appName.uppercase().startsWith(letter)
+            }
+            if (firstMatchingPosition >= 0) {
+                listView.smoothScrollToPosition(firstMatchingPosition)
             }
         }
     }

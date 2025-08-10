@@ -16,6 +16,7 @@ class AppListAdapter(
 ) : BaseAdapter() {
 
     private var filteredApps: List<AppInfo> = allApps
+    private var selectedLetter: String? = null
 
     override fun getCount(): Int = filteredApps.size
 
@@ -32,6 +33,16 @@ class AppListAdapter(
             allApps.filter { app ->
                 app.appName.lowercase().contains(searchText.lowercase())
             }
+        }
+        notifyDataSetChanged()
+    }
+
+    fun filterByLetter(letter: String?) {
+        selectedLetter = letter
+        filteredApps = if (letter == null) {
+            allApps
+        } else {
+            allApps
         }
         notifyDataSetChanged()
     }
@@ -55,6 +66,13 @@ class AppListAdapter(
         // Set icon and name
         viewHolder.icon.setImageDrawable(app.appIcon)
         viewHolder.appName.text = app.appName
+
+        // Set opacity based on letter selection
+        val matchesSelectedLetter = selectedLetter == null || 
+            app.appName.uppercase().startsWith(selectedLetter ?: "")
+        
+        val alpha = if (matchesSelectedLetter || selectedLetter == null) 1.0f else 0.3f
+        viewHolder.card.alpha = alpha
 
         // Set lock icon and card color
         if (isLocked) {

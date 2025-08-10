@@ -13,4 +13,5 @@
     <color name="gray">#888888</color>
     <color name="transparent">#00000000</color>
     <color name="colorAccent">#D7263D</color>
+    <color name="fast_scroller_background">#CC1A1A1A</color>
 </resources>
