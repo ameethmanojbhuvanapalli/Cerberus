@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         registerReceiver(protectionStateReceiver, IntentFilter("com.example.cerberus.PROTECTION_STATE_CHANGED"),Context.RECEIVER_NOT_EXPORTED)
-        checkPermissionsAndUpdateUI()
+//        checkPermissionsAndUpdateUI()
     }
 
     override fun onPause() {
