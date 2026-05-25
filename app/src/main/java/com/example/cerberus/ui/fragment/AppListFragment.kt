@@ -2,10 +2,13 @@ package com.example.cerberus.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ListView
 import androidx.fragment.app.Fragment
 import com.example.cerberus.R
@@ -32,6 +35,7 @@ class AppListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val listView: ListView = view.findViewById(R.id.app_list_view)
+        val searchEditText: EditText = view.findViewById(R.id.search_edit_text)
         val saveButton: Button = view.findViewById(R.id.save_button)
         val context = requireContext()
         val pm = context.packageManager
@@ -50,6 +54,15 @@ class AppListFragment : Fragment() {
         val mutableLockedApps = allLockedApps.toMutableSet()
         adapter = AppListAdapter(context, filteredApps, mutableLockedApps)
         listView.adapter = adapter
+
+        // Set up search functionality
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                adapter?.filter(s?.toString() ?: "")
+            }
+        })
 
         saveButton.setOnClickListener {
             adapter?.let {
@@ -75,7 +88,6 @@ class AppListFragment : Fragment() {
         val context = requireContext()
         val pm = context.packageManager
         val allLockedApps = LockedAppsCache.getLockedApps(context)
-        // repeat your filtering logic here...
         val apps = pm.getInstalledApplications(0)
             .filter { pm.getLaunchIntentForPackage(it.packageName) != null && it.packageName != context.packageName }
             .mapNotNull { AppInfoCache.getAppInfo(context, it.packageName) }
@@ -89,6 +101,14 @@ class AppListFragment : Fragment() {
 
         adapter = AppListAdapter(context, filteredApps, allLockedApps.toMutableSet())
         val listView: ListView = view?.findViewById(R.id.app_list_view) ?: return
+        val searchEditText: EditText? = view?.findViewById(R.id.search_edit_text)
         listView.adapter = adapter
+        
+        // Re-apply search filter if there's text in the search box
+        searchEditText?.text?.toString()?.let { searchText ->
+            if (searchText.isNotEmpty()) {
+                adapter?.filter(searchText)
+            }
+        }
     }
 }
