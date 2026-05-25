@@ -11,17 +11,30 @@ import com.example.cerberus.model.AppInfo
 
 class AppListAdapter(
     private val context: Context,
-    private val apps: List<AppInfo>,
+    private val allApps: List<AppInfo>,
     private val lockedApps: MutableSet<String>
 ) : BaseAdapter() {
 
-    override fun getCount(): Int = apps.size
+    private var filteredApps: List<AppInfo> = allApps
 
-    override fun getItem(position: Int): Any = apps[position]
+    override fun getCount(): Int = filteredApps.size
+
+    override fun getItem(position: Int): Any = filteredApps[position]
 
     override fun getItemId(position: Int): Long = position.toLong()
 
     fun getLockedApps(): Set<String> = lockedApps
+
+    fun filter(searchText: String) {
+        filteredApps = if (searchText.isEmpty()) {
+            allApps
+        } else {
+            allApps.filter { app ->
+                app.appName.lowercase().contains(searchText.lowercase())
+            }
+        }
+        notifyDataSetChanged()
+    }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val viewHolder: ViewHolder
@@ -36,7 +49,7 @@ class AppListAdapter(
             viewHolder = convertView.tag as ViewHolder
         }
 
-        val app = apps[position]
+        val app = filteredApps[position]
         val isLocked = lockedApps.contains(app.packageName)
 
         // Set icon and name

@@ -50,4 +50,6 @@
     <string name="protection_off">Protection is OFF</string>
     <string name="protection_on_desc">Your device is currently protected.</string>
     <string name="protection_off_desc">Protection is currently disabled.</string>
+    <string name="search_apps_placeholder">Search apps...</string>
+    <string name="loading_image">Loading Image</string>
 </resources>
